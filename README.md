@@ -1,6 +1,7 @@
 # 💻 4-Bit Nanoprocessor in VHDL
 
 **CS1050 — Computer Organisation and Digital Design**
+
 **University of Moratuwa | Department of Computer Science and Engineering**
 
 ---
