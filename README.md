@@ -103,4 +103,4 @@ The processor is constructed from **18 individual VHDL components**, each built 
 
 ---
 
-*CS1050 Lab 9–10 — Nanoprocessor Design | University of Moratuwa*
+*CS1050 Lab 9–10 — Nanoprocessor Design*
