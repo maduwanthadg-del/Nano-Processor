@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 04/30/2026 12:02:48 AM
--- Design Name: 
--- Module Name: RegisterBank - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -24,7 +5,7 @@ entity RegisterBank is
     Port (
         Clk    : in  STD_LOGIC;
         Reset  : in  STD_LOGIC;
-        RegEn  : in  STD_LOGIC_VECTOR(7 downto 0);  -- one-hot enable
+        RegEn  : in  STD_LOGIC_VECTOR(7 downto 0);
         DataIn : in  STD_LOGIC_VECTOR(3 downto 0);
         R0out  : out STD_LOGIC_VECTOR(3 downto 0);
         R1out  : out STD_LOGIC_VECTOR(3 downto 0);
