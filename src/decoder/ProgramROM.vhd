@@ -1,27 +1,32 @@
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
-entity ProgramROM is
-    Port (
-        Addr : in  STD_LOGIC_VECTOR(2 downto 0);
-        Data : out STD_LOGIC_VECTOR(11 downto 0)
+entity Program_ROM is
+	port (
+		address : in STD_LOGIC_VECTOR (2 downto 0);
+		instruction : out STD_LOGIC_VECTOR (11 downto 0)
+	);
+end Program_ROM;
+
+architecture Behavioral of Program_ROM is
+	type rom_type is array (0 to 7) of std_logic_vector(11 downto 0);
+signal default_rom : rom_type := (
+        "101110000001",
+        "100010000000",
+        "001110010000",
+        "100010000010",
+        "001110010000",
+        "100010000011",
+        "001110010000",
+        "110000000111"
     );
-end ProgramROM;
 
-architecture Behavioral of ProgramROM is
+
+
+
+ 
+
 begin
-    process(Addr)
-    begin
-        case Addr is
-            when "000" => Data <= "100010000001";  -- MOVI R1, 1
-        when "001" => Data <= "100100000010";  -- MOVI R2, 2
-        when "010" => Data <= "100110000011";  -- MOVI R3, 3
-        when "011" => Data <= "000010100000";  -- ADD  R1, R2
-        when "100" => Data <= "000010110000";  -- ADD  R1, R3
-        when "101" => Data <= "101110000000";  -- MOVI R7, 0
-        when "110" => Data <= "000111001000";  -- ADD  R7, R1
-        when "111" => Data <= "110000000111";  -- JZR  R0, 7
-            when others => Data <= "000000000000";
-        end case;
-    end process;
+	Instruction <= default_rom(to_integer(unsigned(address)));
 end Behavioral;

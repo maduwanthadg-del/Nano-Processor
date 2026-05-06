@@ -1,22 +1,43 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-entity FullAdder is
-    Port (
-        A    : in  STD_LOGIC;
-        B    : in  STD_LOGIC;
-        Cin  : in  STD_LOGIC;
-        Sum  : out STD_LOGIC;
-        Cout : out STD_LOGIC
-    );
-end FullAdder;
 
-architecture Behavioral of FullAdder is
-    component HalfAdder
-        Port (A, B : in STD_LOGIC; Sum, Cout : out STD_LOGIC);
-    end component;
-    signal S1, C1, C2 : STD_LOGIC;
+entity FA is
+    Port ( A : in STD_LOGIC;
+           B : in STD_LOGIC;
+           C_in : in STD_LOGIC;
+           S : out STD_LOGIC;
+           C_out : out STD_LOGIC);
+end FA;
+
+architecture Behavioral of FA is
+component HA
+    port(
+    A : in std_logic;
+    B : in std_logic;
+    S : out std_logic;
+    C : out std_logic);
+end component;
+
+signal HA0_S, HA0_C, HA1_S, HA1_C : std_logic;
+
 begin
-    HA1: HalfAdder port map (A => A,  B => B,   Sum => S1, Cout => C1);
-    HA2: HalfAdder port map (A => S1, B => Cin, Sum => Sum, Cout => C2);
-    Cout <= C1 OR C2;
+HA_0 : HA
+    port map(
+    A => A,
+    B => B,
+    S => HA0_S,
+    C => HA0_C);
+    
+HA_1 : HA
+    port map(
+    A => HA0_S,
+    B => C_in,
+    S => HA1_S,
+    C => HA1_C
+    );
+    
+S <= HA1_S;
+C_out <= HA1_C OR HA0_C;
+
+
 end Behavioral;
