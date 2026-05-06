@@ -1,29 +1,67 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity ProgramCounter_tb is
-end ProgramCounter_tb;
+entity TB_Program_Counter is
+end TB_Program_Counter;
 
-architecture Behavioral of ProgramCounter_tb is
-    component ProgramCounter
-        Port (Clk, Reset : in STD_LOGIC;
-              D : in STD_LOGIC_VECTOR(2 downto 0);
-              Q : out STD_LOGIC_VECTOR(2 downto 0));
+architecture Behavioral of TB_Program_Counter is
+
+    component Program_Counter
+        port (
+            Clk : in STD_LOGIC;                         
+            Reset : in STD_LOGIC;                                          
+            PC_in : in STD_LOGIC_VECTOR (2 downto 0);   
+            PC_out : out STD_LOGIC_VECTOR (2 downto 0));
+            
     end component;
-    signal Clk, Reset : STD_LOGIC := '0';
-    signal D, Q : STD_LOGIC_VECTOR(2 downto 0) := "000";
+    
+    signal clk: std_logic := '0';
+    signal reset, load: std_logic := '0';
+    signal pc_in, pc_out: std_logic_vector (2 downto 0);
+
 begin
-    UUT: ProgramCounter port map (Clk=>Clk, Reset=>Reset, D=>D, Q=>Q);
-    Clk <= NOT Clk after 10 ns;
-    process
-    begin
-        Reset <= '1'; wait for 20 ns;
-        Reset <= '0';
-        D <= "001"; wait for 20 ns;  -- Q should become 001
-        D <= "010"; wait for 20 ns;  -- Q should become 010
-        D <= "111"; wait for 20 ns;  -- Q should become 111
-        Reset <= '1'; wait for 20 ns; -- Q should reset to 000
-        Reset <= '0';
+
+
+
+
+clk_process: process
+begin
+    clk <= not(clk);
+    wait for 50 ns;
+end process;
+
+UUT : Program_Counter
+    port map (
+        Clk => clk,
+        reset => reset,
+        pc_in => pc_in,
+        pc_out => pc_out);
+        
+        
+ sim_process: process
+ begin
+    
+        reset <= '1';
+        wait for 50 ns;
+        reset <= '0';
+        wait for 50ns;
+        
+        load <= '1';
+        pc_in <= "111";
+        wait for 50ns;
+        load <= '0';
+        wait for 150ns;
+        
+        reset <= '1';
+        wait for 50ns;
+        reset <='0';
+        wait for 50ns;
+        
+        
+        
         wait;
-    end process;
+end process;
+        
+
+
 end Behavioral;

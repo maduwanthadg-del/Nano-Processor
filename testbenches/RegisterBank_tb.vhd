@@ -1,45 +1,97 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity RegisterBank_tb is
-end RegisterBank_tb;
+entity TB_Reg_Bank is
+end TB_Reg_Bank;
 
-architecture Behavioral of RegisterBank_tb is
-    component RegisterBank
-        Port (Clk, Reset : in STD_LOGIC;
-              RegEn  : in STD_LOGIC_VECTOR(7 downto 0);
-              DataIn : in STD_LOGIC_VECTOR(3 downto 0);
-              R0out, R1out, R2out, R3out,
-              R4out, R5out, R6out, R7out : out STD_LOGIC_VECTOR(3 downto 0));
-    end component;
-    signal Clk, Reset : STD_LOGIC := '0';
-    signal RegEn   : STD_LOGIC_VECTOR(7 downto 0) := "00000000";
-    signal DataIn  : STD_LOGIC_VECTOR(3 downto 0) := "0000";
-    signal R0out, R1out, R2out, R3out : STD_LOGIC_VECTOR(3 downto 0);
-    signal R4out, R5out, R6out, R7out : STD_LOGIC_VECTOR(3 downto 0);
+architecture Behavioral of TB_Reg_Bank is
+
+    component Reg_Bank
+        port (
+            Clk       : in  STD_LOGIC;
+                   Reg_sel   : in  STD_LOGIC_VECTOR (2 downto 0);
+                   Input_val : in  STD_LOGIC_VECTOR (3 downto 0);
+                   Reset     : in  STD_LOGIC;
+                   Q0        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q1        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q2        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q3        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q4        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q5        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q6        : out STD_LOGIC_VECTOR (3 downto 0);
+                   Q7        : out STD_LOGIC_VECTOR (3 downto 0));
+        end component;
+        
+        
+        signal q0, q1, q2, q3, q4,q5, q6, q7, inval: std_logic_vector (3 downto 0);
+        signal reset, clk: std_logic := '0';
+        signal regsel : std_logic_vector ( 2 downto 0);
+        
+        
+            
+
 begin
-    UUT: RegisterBank port map (
-        Clk=>Clk, Reset=>Reset, RegEn=>RegEn, DataIn=>DataIn,
-        R0out=>R0out, R1out=>R1out, R2out=>R2out, R3out=>R3out,
-        R4out=>R4out, R5out=>R5out, R6out=>R6out, R7out=>R7out);
 
-    Clk <= NOT Clk after 10 ns;
 
-    process
-    begin
-        -- Apply reset
-        Reset <= '1'; wait for 20 ns;
-        Reset <= '0';
-        -- Write 6 (0110) into R7
-        DataIn <= "0110"; RegEn <= "10000000"; wait for 20 ns;
-        RegEn <= "00000000"; wait for 20 ns;
-        -- Write 1 (0001) into R1
-        DataIn <= "0001"; RegEn <= "00000010"; wait for 20 ns;
-        RegEn <= "00000000"; wait for 20 ns;
-        -- Try to write 1111 into R0 -- R0out must stay 0000
-        DataIn <= "1111"; RegEn <= "00000001"; wait for 20 ns;
-        RegEn <= "00000000"; wait for 20 ns;
-        -- R0out should still be 0000
-        wait;
-    end process;
+        UUT: Reg_Bank
+            port map (
+                Clk => clk,
+                Reg_sel => regsel,
+                Input_val => inval,
+                Reset => reset,
+                Q0 => q0,
+                Q1 => q1,
+                Q2 => q2,
+                Q3 => q3,
+                Q4 => q4,
+                Q5 => q5,
+                Q6 => q6,
+                Q7 => q7);
+
+
+        clock_process: process
+        begin
+            clk <= not clk;
+            wait for 50ns;
+        end process;
+        
+        sim_process : process
+        begin
+            reset <= '1';
+            wait for 100ns;
+            reset <= '0';
+            
+            inval <= "0001";
+            regsel <= "000";
+            wait for 100ns;
+                        
+            regsel <= "001";
+            wait for 100ns;
+                                    
+                                    
+            regsel <= "011";
+            wait for 100ns;
+            
+            regsel <= "100";
+            wait for 100ns;
+            
+            regsel <= "101";
+            wait for 100ns;
+            
+            regsel <= "110";
+            wait for 100ns;
+            
+            regsel <= "111";
+            wait for 200ns;
+            
+            reset <= '1';
+            wait for 100ns;
+            wait;
+            
+            
+       end process; 
+        
+        
+
+
 end Behavioral;

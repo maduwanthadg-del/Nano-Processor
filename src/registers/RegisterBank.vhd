@@ -1,38 +1,120 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity RegisterBank is
-    Port (
-        Clk    : in  STD_LOGIC;
-        Reset  : in  STD_LOGIC;
-        RegEn  : in  STD_LOGIC_VECTOR(7 downto 0);
-        DataIn : in  STD_LOGIC_VECTOR(3 downto 0);
-        R0out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R1out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R2out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R3out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R4out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R5out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R6out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R7out  : out STD_LOGIC_VECTOR(3 downto 0)
-    );
-end RegisterBank;
+entity Reg_Bank is
+    Port ( Clk       : in  STD_LOGIC;
+           Reg_sel   : in  STD_LOGIC_VECTOR (2 downto 0);
+           Input_val : in  STD_LOGIC_VECTOR (3 downto 0);
+           Reset     : in  STD_LOGIC;
+           Q0        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q1        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q2        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q3        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q4        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q5        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q6        : out STD_LOGIC_VECTOR (3 downto 0);
+           Q7        : out STD_LOGIC_VECTOR (3 downto 0));
+end Reg_Bank;
 
-architecture Behavioral of RegisterBank is
-    component Reg4bit
-        Port (D : in STD_LOGIC_VECTOR(3 downto 0);
-              Clk, Reset, En : in STD_LOGIC;
-              Q : out STD_LOGIC_VECTOR(3 downto 0));
+architecture Behavioral of Reg_Bank is
+
+    component Decoder_3_to_8
+        port (
+            I  : in  std_logic_vector (2 downto 0);
+            Y  : out std_logic_vector (7 downto 0)
+        );
     end component;
-begin
-    -- R0 is permanently hardwired to 0000 (read-only, never written)
-    R0out <= "0000";
+   
+    component Reg
+        port (
+            En    : in  std_logic;
+            Clk   : in  std_logic;
+            reset : in  std_logic;
+            Data  : in  std_logic_vector (3 downto 0);
+            Q     : out std_logic_vector (3 downto 0)
+        );
+    end component; 
+   
+    signal y : std_logic_vector (7 downto 0);
 
-    R1: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(1), Q=>R1out);
-    R2: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(2), Q=>R2out);
-    R3: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(3), Q=>R3out);
-    R4: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(4), Q=>R4out);
-    R5: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(5), Q=>R5out);
-    R6: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(6), Q=>R6out);
-    R7: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(7), Q=>R7out);
+begin
+
+    Decoder_0 : Decoder_3_to_8
+        port map (
+            I  => Reg_sel,
+            Y  => y
+        );
+
+    Reg_0 : Reg
+        port map (
+            En    =>y(0),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q0,
+            reset => Reset
+        );
+
+    Reg_1 : Reg
+        port map (
+            En    => y(1),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q1,
+            reset => Reset
+        );
+
+    Reg_2 : Reg
+        port map (
+            En    => Y(2),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q2,
+            reset => Reset
+        );
+
+    Reg_3 : Reg
+        port map (
+            En    => y(3),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q3,
+            reset => Reset
+        );
+
+    Reg_4 : Reg
+        port map (
+            En    => y(4),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q4,
+            reset => Reset
+        );
+
+    Reg_5 : Reg
+        port map (
+            En    => y(5),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q5,
+            reset => Reset
+        );
+
+    Reg_6 : Reg
+        port map (
+            En    => y(6),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q6,
+            reset => Reset
+        );
+
+    Reg_7 : Reg
+        port map (
+            En    => y(7),
+            Clk   => Clk,
+            Data  => Input_val,
+            Q     => Q7,
+            reset => Reset
+        );
+
 end Behavioral;
