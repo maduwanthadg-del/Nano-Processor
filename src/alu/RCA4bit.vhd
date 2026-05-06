@@ -1,25 +1,76 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-entity RCA4bit is
-    Port (
-        A    : in  STD_LOGIC_VECTOR(3 downto 0);
-        B    : in  STD_LOGIC_VECTOR(3 downto 0);
-        Cin  : in  STD_LOGIC;
-        Sum  : out STD_LOGIC_VECTOR(3 downto 0);
-        Cout : out STD_LOGIC
-    );
-end RCA4bit;
 
-architecture Behavioral of RCA4bit is
-    component FullAdder
-        Port (A, B, Cin : in STD_LOGIC; Sum, Cout : out STD_LOGIC);
-    end component;
-    signal C : STD_LOGIC_VECTOR(4 downto 0);
+entity RCA_4 is
+    Port ( A : in STD_LOGIC_VECTOR(3 downto 0);
+           B : in STD_LOGIC_VECTOR(3 downto 0);
+           CTR : in STD_LOGIC;
+           S : inout STD_LOGIC_VECTOR(3 downto 0);
+           Overflow : out STD_LOGIC;
+           Zero : out STD_LOGIC);
+end RCA_4;
+
+architecture Behavioral of RCA_4 is
+
+
+component FA
+    port(
+    A: in std_logic;
+    B: in std_logic;
+    C_in: in std_logic;
+    S: out std_logic;
+    C_out: out std_logic
+    );
+    
+    
+    
+end component;
+
+signal  FA0_C, FA1_C, FA2_C: std_logic;
+signal B_0,B_1,B_2,B_3 : std_logic;
+
+
+
 begin
-    C(0) <= Cin;
-    FA0: FullAdder port map (A=>A(0), B=>B(0), Cin=>C(0), Sum=>Sum(0), Cout=>C(1));
-    FA1: FullAdder port map (A=>A(1), B=>B(1), Cin=>C(1), Sum=>Sum(1), Cout=>C(2));
-    FA2: FullAdder port map (A=>A(2), B=>B(2), Cin=>C(2), Sum=>Sum(2), Cout=>C(3));
-    FA3: FullAdder port map (A=>A(3), B=>B(3), Cin=>C(3), Sum=>Sum(3), Cout=>C(4));
-    Cout <= C(4);
+    
+    B_0 <= B(0) XOR CTR;
+    B_1 <= B(1) XOR CTR;
+    B_2 <= B(2) XOR CTR;
+    B_3 <= B(3) XOR CTR;
+
+    FA0_0: FA
+        port map(
+            A => A(0),
+            B => B_0,
+            C_in => CTR,
+            S => S(0),
+            C_out => FA0_C    
+        );
+    FA0_1: FA
+        port map(
+            A => A(1),
+            B => B_1,
+            C_in => FA0_C,
+            S => S(1),
+            C_out => FA1_C
+        );
+    FA0_2: FA
+        port map(
+            A => A(2),
+            B => B_2,
+            C_in => FA1_C,
+            S => S(2),
+            C_out => FA2_C
+        );
+    FA0_3: FA
+    port map(
+        A => A(3),
+        B => B_3,
+        C_in => FA2_C,
+        S => S(3),
+        C_out => Overflow
+    );
+    
+    Zero <= NOT(S(0) OR S(1) OR S(2) OR S(3));
+           
 end Behavioral;

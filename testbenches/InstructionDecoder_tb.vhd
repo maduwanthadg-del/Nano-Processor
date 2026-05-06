@@ -1,39 +1,92 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity InstructionDecoder_tb is
-end InstructionDecoder_tb;
+entity TB_Instruction_Decoder is
+end TB_Instruction_Decoder;
 
-architecture Behavioral of InstructionDecoder_tb is
-    component InstructionDecoder
-        Port (Instr : in STD_LOGIC_VECTOR(11 downto 0);
-              RegSel_A, RegSel_B : out STD_LOGIC_VECTOR(2 downto 0);
-              LoadSel, AddSubSel, JumpFlag, RegWrite : out STD_LOGIC;
-              ImmVal   : out STD_LOGIC_VECTOR(3 downto 0);
-              JumpAddr : out STD_LOGIC_VECTOR(2 downto 0));
-    end component;
-    signal Instr                              : STD_LOGIC_VECTOR(11 downto 0);
-    signal RegSel_A, RegSel_B, JumpAddr      : STD_LOGIC_VECTOR(2 downto 0);
-    signal LoadSel, AddSubSel, JumpFlag, RegWrite : STD_LOGIC;
-    signal ImmVal                             : STD_LOGIC_VECTOR(3 downto 0);
+architecture Behavioral of TB_Instruction_Decoder is
+
+    component Instruction_Decoder
+        port (
+            Instruction_bus : in STD_LOGIC_VECTOR (11 downto 0);
+                   Jmp_check_flags : in STD_LOGIC_VECTOR (3 downto 0);
+                   Immediate_val : out STD_LOGIC_VECTOR (3 downto 0);
+                   Load_sel : out STD_LOGIC;
+                   Add_sub_sel : out STD_LOGIC;
+                   Reg_Sel_A : out STD_LOGIC_VECTOR (2 downto 0);
+                   Reg_Sel_B : out STD_LOGIC_VECTOR (2 downto 0);
+                   Reg_en : out STD_LOGIC_VECTOR (2 downto 0);
+                   Jmp_flag : out STD_LOGIC;
+                   Jmp_Addr : out STD_LOGIC_VECTOR (2 downto 0));
+        end component;
+   
+   
+        component PC_System 
+               Port ( reset : in STD_LOGIC;
+                      clk : in STD_LOGIC;
+                      jmp_addr : in STD_LOGIC_VECTOR (2 downto 0);
+                      jmp_flag : in STD_LOGIC;
+                      out_addr : out STD_LOGIC_VECTOR (2 downto 0));
+       end component;
+       
+       
+       component Program_ROM
+               port (
+                   address: in std_logic_vector (2 downto 0);
+                   instruction: out std_logic_vector ( 11 downto 0));
+        end component;
+            
+   
+   signal load_sel, add_sub_sel, jmp, reset, clk  : std_logic := '0';
+   signal regsela, regselb, regen, jmp_addr, pc_out: std_logic_vector (2 downto 0);
+   signal instruction : std_logic_vector (11 downto 0);
+   signal immediate_val : std_logic_vector (3 downto 0);
+   
+   
+   
+
 begin
-    UUT: InstructionDecoder port map (
-        Instr=>Instr, RegSel_A=>RegSel_A, RegSel_B=>RegSel_B,
-        LoadSel=>LoadSel, AddSubSel=>AddSubSel, ImmVal=>ImmVal,
-        JumpFlag=>JumpFlag, JumpAddr=>JumpAddr, RegWrite=>RegWrite);
 
-    process
-    begin
-        -- MOVI R1, 1 -> LoadSel=1, RegWrite=1, RegSel_A=001, ImmVal=0001
-        Instr <= "100010000001"; wait for 20 ns;
-        -- ADD R1, R2 -> AddSubSel=0, RegWrite=1, RegSel_A=001, RegSel_B=010
-        Instr <= "000010100000"; wait for 20 ns;
-        -- NEG R3     -> AddSubSel=1, RegWrite=1, RegSel_A=011
-        Instr <= "010110000000"; wait for 20 ns;
-        -- JZR R0, 7  -> JumpFlag=1, RegWrite=0, JumpAddr=111
-        Instr <= "110000000111"; wait for 20 ns;
-        -- MOVI R7, 0 -> LoadSel=1, RegWrite=1, RegSel_A=111, ImmVal=0000
-        Instr <= "101110000000"; wait for 20 ns;
-        wait;
-    end process;
+PC_System_0 : PC_System
+    port map (
+        reset => reset,
+        clk => clk,
+        jmp_addr => jmp_addr,
+        jmp_flag => jmp,
+        out_addr => pc_out );
+        
+        
+        PROM : Program_ROM
+            port map (
+                address => pc_out,
+                instruction => instruction);
+                
+                
+         clk_process: process
+                begin
+                   clk <= not clk;
+                   wait for 50ns;
+                end process;
+        
+        
+   
+
+    UUT : Instruction_Decoder
+       port map (
+            Instruction_bus => instruction,
+            jmp_check_flags => "1111",
+            Load_sel => load_sel,
+            Add_sub_sel => Add_sub_sel,
+            Reg_sel_a => regsela,
+            Reg_sel_b => regselb,
+            reg_en => regen,
+            jmp_flag => jmp,
+            jmp_addr => jmp_addr,
+            immediate_val => immediate_val);
+            
+    
+            
+           
+            
+
 end Behavioral;

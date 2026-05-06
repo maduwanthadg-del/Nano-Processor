@@ -1,31 +1,42 @@
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity Decoder3to8 is
-    Port (
-        En : in  STD_LOGIC;
-        A  : in  STD_LOGIC_VECTOR(2 downto 0);
-        Y  : out STD_LOGIC_VECTOR(7 downto 0)
-    );
-end Decoder3to8;
+entity Decoder_3_to_8 is
+    Port ( I : in STD_LOGIC_VECTOR (2 downto 0);
+           Y : out STD_LOGIC_VECTOR (7 downto 0));
+end Decoder_3_to_8;
 
-architecture Behavioral of Decoder3to8 is
+architecture Behavioral of Decoder_3_to_8 is
+component Decoder_2_to_4
+port( I : in STD_LOGIC_VECTOR (1 downto 0);
+      EN : in STD_LOGIC;
+      Y : out STD_LOGIC_VECTOR (3 downto 0));
+end component;
+
+signal I0, I1 : STD_LOGIC_VECTOR (1 downto 0);
+signal Y0, Y1 : STD_LOGIC_VECTOR (3 downto 0);
+signal en0, en1 : STD_LOGIC;
+
 begin
-    process(En, A)
-    begin
-        Y <= "00000000";
-        if En = '1' then
-            case A is
-                when "000" => Y <= "00000001";
-                when "001" => Y <= "00000010";
-                when "010" => Y <= "00000100";
-                when "011" => Y <= "00001000";
-                when "100" => Y <= "00010000";
-                when "101" => Y <= "00100000";
-                when "110" => Y <= "01000000";
-                when "111" => Y <= "10000000";
-                when others => Y <= "00000000";
-            end case;
-        end if;
-    end process;
+    Decoder_2_to_4_0 : Decoder_2_to_4
+    port map(
+        I => I0,
+        EN => en0,
+        Y => Y0
+    );
+    Decoder_2_to_4_1 : Decoder_2_to_4
+    port map(
+        I => I1,
+        EN => en1,
+        Y => Y1
+    );
+    
+    en0 <= NOT(I(2));
+    en1 <= I(2);
+    I0 <= I(1 downto 0);
+    I1 <= I(1 downto 0);
+    Y(3 downto 0) <= Y0;
+    Y(7 downto 4) <= Y1;
+
 end Behavioral;
