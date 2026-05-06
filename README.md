@@ -1,53 +1,74 @@
-# 💻 4-Bit Nanoprocessor in VHDL
+# 4-Bit Nanoprocessor in VHDL
 
-**CS1050 — Computer Organisation and Digital Design**
+This project implements a 4-bit nanoprocessor in VHDL, designed for the Digilent BASYS 3 FPGA board. The processor executes a simple program to compute 1 + 2 + 3 = 6 and displays the result on LEDs and 7-segment display.
 
-**University of Moratuwa | Department of Computer Science and Engineering**
+## Project Structure
 
----
+### Source Files (`src/`)
 
-## What is This Project?
+#### ALU (`src/alu/`)
+- `Adder3bit.vhd` - 3-bit adder
+- `FullAdder.vhd` - Full adder component
+- `HalfAdder.vhd` - Half adder component
+- `Mux2way3bit.vhd` - 2-way 3-bit multiplexer
+- `Mux2way4bit.vhd` - 2-way 4-bit multiplexer
+- `Mux8way4bit.vhd` - 8-way 4-bit multiplexer
+- `RCA4bit.vhd` - 4-bit ripple carry adder
 
-This project is a **4-bit nanoprocessor**, designed from scratch in VHDL and deployed on the **Digilent BASYS 3 FPGA board**. It is a working miniature CPU — built entirely from basic logic gates and flip-flops — that can fetch, decode, and execute instructions just like a real processor.
+#### Decoder (`src/decoder/`)
+- `InstructionDecoder.vhd` - Decodes instructions into control signals
+- `ProgramROM.vhd` - Program memory storing the instruction set
 
-The processor runs a hard-coded program that computes **1 + 2 + 3 = 6** and displays the result on the board's LEDs and 7-segment display.
+#### Registers (`src/registers/`)
+- `Decoder3to8.vhd` - 3-to-8 decoder
+- `DFF.vhd` - D flip-flop
+- `ProgramCounter.vhd` - Program counter
+- `ProgramCounterSystem.vhd` - Program counter system
+- `Reg4bit.vhd` - 4-bit register
+- `RegisterBank.vhd` - Bank of 8 registers (R0-R7)
 
----
+#### Top Level (`src/top/`)
+- `Nanoprocessor.vhd` - Main processor module
+- `SevenSegDisplay.vhd` - 7-segment display driver
+- `SlowClock.vhd` - Clock divider for visible execution
 
-## The Big Picture
+### Testbenches (`testbenches/`)
+- `AddSub4bit_tb.vhd` - Testbench for adder/subtractor
+- `InstructionDecoder_tb.vhd` - Testbench for instruction decoder
+- `Mux8way4bit_tb.vhd` - Testbench for 8-way multiplexer
+- `Nanoprocessor_tb.vhd` - Testbench for the complete processor
+- `ProgramCounter_tb.vhd` - Testbench for program counter
+- `ProgramROM_tb.vhd` - Testbench for program ROM
+- `RegisterBank_tb.vhd` - Testbench for register bank
 
-At its core, the nanoprocessor is a **clocked state machine** that repeats the classic CPU cycle:
-
-```
-Fetch → Decode → Execute → Write Back → Advance PC
-```
-
-Every **2 seconds** (driven by a slow clock derived from the board's 100 MHz oscillator), the processor reads one instruction from its built-in memory, figures out what to do, performs the operation, and saves the result — then moves to the next instruction.
-
-After **8 instructions (~16 seconds)**, the answer `6` appears on the LEDs and 7-segment display, and the processor holds that result in an infinite loop.
-
----
+### Constraints (`constraints/`)
+- `Basys3.xdc` - FPGA pin constraints for BASYS 3 board
 
 ## Instruction Set
 
-The processor supports exactly **4 instructions**:
+The processor supports 4 instructions:
+- `MOVI R, d` - Load immediate value into register
+- `ADD Ra, Rb` - Add Rb to Ra
+- `NEG R` - Negate register (two's complement)
+- `JZR R, d` - Jump if register is zero
 
-| Instruction | What it does |
-|-------------|-------------|
-| `MOVI R, d` | Load a constant value into a register |
-| `ADD Ra, Rb` | Add register Rb into register Ra |
-| `NEG R` | Negate a register (two's complement) |
-| `JZR R, d` | Jump to address d if register R is zero |
+## Program Execution
 
-Instructions are 12 bits wide. The top 2 bits are the opcode; the rest encode register selectors and immediate values.
+The processor runs a hardcoded program:
+1. MOVI R1, 1
+2. MOVI R2, 2
+3. MOVI R3, 3
+4. ADD R1, R2  (R1 = 3)
+5. ADD R1, R3  (R1 = 6)
+6. MOVI R7, 0
+7. ADD R7, R1  (R7 = 6 - result on display)
+8. JZR R0, 7  (infinite loop)
 
----
-
-## How the Program Runs
-
-The processor executes this 8-line assembly program:
-
-```
+## Tools
+- HDL: VHDL
+- FPGA: Digilent BASYS 3 (Xilinx Artix-7)
+- EDA: Xilinx Vivado
+- Clock: 100 MHz → 0.5 Hz (slow clock for visibility)
 MOVI R1, 1      ; R1 = 1
 MOVI R2, 2      ; R2 = 2
 MOVI R3, 3      ; R3 = 3
