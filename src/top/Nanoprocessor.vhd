@@ -141,7 +141,7 @@ begin
 	Clock : Slow_clk
 	port map(
 		clk_in => clk, 
-		clk_out => slow_clock_out
+		clk_out => slow_clock_out -- Slow down the main board clock for the processor
 	);
 	PC : PC_System
 	port map(
@@ -250,10 +250,10 @@ begin
  
 
  
-	Overflow <= rca_overflow;
-	led <= q7;
-	zero <= zero_flag;
-	Anode <= "1110";
+	Overflow <= rca_overflow; -- Route ALU overflow to output
+	led <= q7; -- Continuously display the value of Register 7 on the LEDs
+	zero <= zero_flag; -- Route ALU zero flag to output
+	Anode <= "1110"; -- Activate the rightmost 7-segment display digit
 
  
  
