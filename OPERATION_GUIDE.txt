@@ -1,0 +1,181 @@
+================================================================================
+             NANO-PROCESSOR - PRACTICAL OPERATION GUIDE
+                      (Basys3 Rev B Board)
+================================================================================
+
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+This is a 4-bit Nano-Processor implemented on the Digilent Basys3 FPGA board.
+It features 8 general-purpose registers (R0-R7), a 4-bit ALU with add/subtract
+capability, an 8-instruction Program ROM, and output via LEDs and a 7-segment
+display. The processor executes instructions sequentially at approximately
+1 Hz (one instruction per second).
+
+
+2. BOARD SETUP & PROGRAMMING
+--------------------------------------------------------------------------------
+  - Connect the Basys3 board to your PC via USB.
+  - Open Xilinx Vivado and use the Hardware Manager to program the board
+    with the bitstream file: bitstream/processor.bit
+  - No switches need to be set before programming.
+
+
+3. RESET BUTTON
+--------------------------------------------------------------------------------
+  Signal  : Reset
+  Button  : btnC (Center Push Button)
+  Pin     : U18
+  Action  : Press and hold to reset the processor.
+             - All registers (R0-R7) are cleared to "0000".
+             - The Program Counter resets to address "000" (Instruction 0).
+             - Release the button to begin program execution from the start.
+
+  NOTE: The reset is ACTIVE HIGH. The processor is held in reset as long
+        as the button is pressed.
+
+
+4. LED MAPPING
+--------------------------------------------------------------------------------
+The Basys3 board has 16 LEDs (LD0-LD15). This design uses the following:
+
+  +--------+--------+-----------+----------------------------------------------+
+  | LED    | Pin    | Signal    | Description                                  |
+  +--------+--------+-----------+----------------------------------------------+
+  | LD0    | U16    | led[0]    | Register 7, Bit 0 (LSB)                      |
+  | LD1    | E19    | led[1]    | Register 7, Bit 1                            |
+  | LD2    | U19    | led[2]    | Register 7, Bit 2                            |
+  | LD3    | V19    | led[3]    | Register 7, Bit 3 (MSB)                      |
+  | LD14   | P1     | Zero      | Zero Flag - ON when ALU result is zero        |
+  | LD15   | L1     | Overflow  | Overflow Flag - ON when ALU result overflows  |
+  +--------+--------+-----------+----------------------------------------------+
+
+  - LEDs LD0-LD3 continuously display the binary value stored in Register 7
+    (R7), which is the accumulator used in this program.
+  - LEDs LD4-LD13 are unused and will remain OFF.
+  - LD14 (Zero) lights up when the last ALU operation produced a result of 0.
+  - LD15 (Overflow) lights up when the last ALU operation caused an overflow
+    beyond the 4-bit range.
+
+
+5. SEVEN-SEGMENT DISPLAY MAPPING
+--------------------------------------------------------------------------------
+  Signal  : seg[6:0] and Anode[3:0]
+  Pins    : W7, W6, U8, V8, U5, V5, U7 (segments a-g)
+            U2, U4, V4, W4 (anode control)
+
+  The seven-segment display shows the DECIMAL/HEX value of Register 7 (R7).
+  Only the rightmost digit is active (Anode = "1110").
+
+  The display is active-low, meaning a segment lights up when its signal is '0'.
+
+  Mapping of displayed values:
+  +-------+-----------+-------------------+
+  | Value | Binary    | Display Character |
+  +-------+-----------+-------------------+
+  |   0   | 1000000   |        0          |
+  |   1   | 1111001   |        1          |
+  |   2   | 0100100   |        2          |
+  |   3   | 0110000   |        3          |
+  |   4   | 0011001   |        4          |
+  |   5   | 0010010   |        5          |
+  |   6   | 0000010   |        6          |
+  |   7   | 1111000   |        7          |
+  |   8   | 0000000   |        8          |
+  |   9   | 0010000   |        9          |
+  |  10   | 0001000   |        A          |
+  |  11   | 0000011   |        b          |
+  |  12   | 1000110   |        C          |
+  |  13   | 0100001   |        d          |
+  |  14   | 0000110   |        E          |
+  |  15   | 0001110   |        F          |
+  +-------+-----------+-------------------+
+
+
+6. LOADED PROGRAM (Program ROM Contents)
+--------------------------------------------------------------------------------
+The processor executes the following hard-coded program:
+
+  +------+----------------+----------------+-----------------------------------+
+  | Addr | Binary         | Assembly       | Description                       |
+  +------+----------------+----------------+-----------------------------------+
+  |  0   | 101110000001   | MOVI R7, 1     | Load 1 into Register 7            |
+  |  1   | 100010000000   | MOVI R1, 0     | Load 0 into Register 1            |
+  |  2   | 001110010000   | ADD  R7, R1    | R7 = R7 + R1 = 1 + 0 = 1         |
+  |  3   | 100010000010   | MOVI R1, 2     | Load 2 into Register 1            |
+  |  4   | 001110010000   | ADD  R7, R1    | R7 = R7 + R1 = 1 + 2 = 3         |
+  |  5   | 100010000011   | MOVI R1, 3     | Load 3 into Register 1            |
+  |  6   | 001110010000   | ADD  R7, R1    | R7 = R7 + R1 = 3 + 3 = 6         |
+  |  7   | 110000000111   | JZR  R0, 7     | If R0 == 0, jump to address 7     |
+  |      |                |                | (Infinite loop - Halt)            |
+  +------+----------------+----------------+-----------------------------------+
+
+  Summary: The program computes 1 + 0 + 2 + 3 = 6 and stores the result in R7.
+  Instruction 7 creates an infinite loop (since R0 is always 0) to halt execution.
+
+
+7. EXPECTED BEHAVIOR (Step-by-Step)
+--------------------------------------------------------------------------------
+After programming the board and releasing the Reset button, the processor
+will execute one instruction approximately every 1 second:
+
+  Time (approx.)   LEDs (LD3-LD0)   7-Seg Display   Description
+  ---------------  ---------------  --------------  -------------------------
+  After Reset      0000             0               All registers cleared
+  ~1 second        0001             1               R7 = 1 (MOVI R7, 1)
+  ~2 seconds       0001             1               R1 = 0 (R7 unchanged)
+  ~3 seconds       0001             1               R7 = 1 + 0 = 1
+  ~4 seconds       0001             1               R1 = 2 (R7 unchanged)
+  ~5 seconds       0011             3               R7 = 1 + 2 = 3
+  ~6 seconds       0011             3               R1 = 3 (R7 unchanged)
+  ~7 seconds       0110             6               R7 = 3 + 3 = 6
+  ~8+ seconds      0110             6               HALT (loops at addr 7)
+
+  Final steady state:
+    - LEDs LD0-LD3 show: 0110 (binary for 6)
+    - 7-Segment display shows: 6
+    - Zero LED (LD14): OFF (result is not zero)
+    - Overflow LED (LD15): OFF (no overflow occurred)
+
+  Pressing Reset at any time will restart the program from the beginning.
+
+
+8. CLOCK INFORMATION
+--------------------------------------------------------------------------------
+  - Board oscillator: 100 MHz (W5)
+  - Processor clock:  ~1 Hz (divided by factor of 50,000,000)
+  - Each instruction executes on the rising edge of the slow clock.
+  - For simulation purposes, the clock divider value in SlowClock.vhd
+    can be changed from 50000000 to 5 for faster simulation results.
+
+
+9. INSTRUCTION SET REFERENCE
+--------------------------------------------------------------------------------
+The Nano-Processor supports 4 instructions, encoded in a 12-bit format:
+
+  +--------+--------+-----------------------------------------------------+
+  | Opcode | Name   | Format & Description                                |
+  +--------+--------+-----------------------------------------------------+
+  |   00   | ADD    | 00_RRR_RRR_0000                                     |
+  |        |        | Adds the value of Register A to Register B.          |
+  |        |        | Result is stored in Register B.                      |
+  +--------+--------+-----------------------------------------------------+
+  |   01   | NEG    | 01_RRR_RRR_0000                                     |
+  |        |        | Subtracts Register A from Register B (2s complement).|
+  |        |        | Result is stored in Register B.                      |
+  +--------+--------+-----------------------------------------------------+
+  |   10   | MOVI   | 10_RRR_000_IIII                                     |
+  |        |        | Loads the 4-bit immediate value (IIII) directly      |
+  |        |        | into the specified register (RRR).                   |
+  +--------+--------+-----------------------------------------------------+
+  |   11   | JZR    | 11_000_000_0AAA                                     |
+  |        |        | Jumps to address AAA if the specified register        |
+  |        |        | contains zero. Used for conditional branching.        |
+  +--------+--------+-----------------------------------------------------+
+
+  Bit layout: [11:10] = Opcode | [9:7] = Reg B | [6:4] = Reg A | [3:0] = Data
+
+
+================================================================================
+                          END OF OPERATION GUIDE
+================================================================================
