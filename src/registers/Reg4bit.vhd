@@ -1,34 +1,65 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 05/02/2025 03:16:25 PM
+-- Design Name: 
+-- Module Name: Reg - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity Reg4bit is
-    Port (
-        D     : in  STD_LOGIC_VECTOR(3 downto 0);
-        Clk   : in  STD_LOGIC;
-        Reset : in  STD_LOGIC;
-        En    : in  STD_LOGIC;
-        Q     : out STD_LOGIC_VECTOR(3 downto 0)
-    );
-end Reg4bit;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-architecture Behavioral of Reg4bit is
-    component DFF
-        Port (D, Clk, Reset : in STD_LOGIC; Q : out STD_LOGIC);
-    end component;
-    signal D_gated    : STD_LOGIC_VECTOR(3 downto 0);
-    signal Q_internal : STD_LOGIC_VECTOR(3 downto 0);
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity Reg is
+    Port ( Data : in STD_LOGIC_VECTOR (3 downto 0);
+           En : in STD_LOGIC;
+           Clk : in STD_LOGIC;
+           Reset : in STD_LOGIC;
+           Q : out STD_LOGIC_VECTOR (3 downto 0));
+end Reg;
+
+architecture Behavioral of Reg is
+
 begin
-    -- Gate the data input with the enable signal
-    -- When En=0 the register holds its current value
-    D_gated(0) <= (D(0) AND En) OR (Q_internal(0) AND NOT En);
-    D_gated(1) <= (D(1) AND En) OR (Q_internal(1) AND NOT En);
-    D_gated(2) <= (D(2) AND En) OR (Q_internal(2) AND NOT En);
-    D_gated(3) <= (D(3) AND En) OR (Q_internal(3) AND NOT En);
 
-    FF0: DFF port map (D=>D_gated(0), Clk=>Clk, Reset=>Reset, Q=>Q_internal(0));
-    FF1: DFF port map (D=>D_gated(1), Clk=>Clk, Reset=>Reset, Q=>Q_internal(1));
-    FF2: DFF port map (D=>D_gated(2), Clk=>Clk, Reset=>Reset, Q=>Q_internal(2));
-    FF3: DFF port map (D=>D_gated(3), Clk=>Clk, Reset=>Reset, Q=>Q_internal(3));
+    process(Clk, Reset)
+    begin
+        if rising_edge(Clk) then
+            if En = '1' then
+                Q <= Data;
+            end if;
+        end if;
+            
+            if Reset = '1' then
+                Q <= "0000";
+            end if;
+            
+            
+            
+    end process;
+        
+        
 
-    Q <= Q_internal;
+
 end Behavioral;

@@ -1,61 +1,78 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.buses.all;
+use work.op_codes.all;
 
-entity InstructionDecoder is
+entity Instruction_Decoder is
     Port (
-        Instr     : in  STD_LOGIC_VECTOR(11 downto 0);
-        RegSel_A  : out STD_LOGIC_VECTOR(2 downto 0);
-        RegSel_B  : out STD_LOGIC_VECTOR(2 downto 0);
-        LoadSel   : out STD_LOGIC;
-        AddSubSel : out STD_LOGIC;
-        ImmVal    : out STD_LOGIC_VECTOR(3 downto 0);
-        JumpFlag  : out STD_LOGIC;
-        JumpAddr  : out STD_LOGIC_VECTOR(2 downto 0);
-        RegWrite  : out STD_LOGIC
+        Instruction            : in  instruction_bus;
+        Jump_Register_Value    : in  data_bus;
+        Register_Enable        : out register_address;
+        Register_Select_A      : out register_address;
+        Register_Select_B      : out register_address;
+        Operation              : out std_logic;
+        Immediate_value        : out data_bus;
+        Jump_flag              : out std_logic;
+        Jump_Address           : out instruction_address;
+        Load_select            : out std_logic_vector (1 downto 0);
+        Waiting_flag : out std_logic  -- New output for input wait
     );
-end InstructionDecoder;
+end Instruction_Decoder;
 
-architecture Behavioral of InstructionDecoder is
-    signal opcode : STD_LOGIC_VECTOR(1 downto 0);
+architecture Behavioral of Instruction_Decoder is
+    signal op_code : std_logic_vector(2 downto 0);
 begin
-    opcode <= Instr(11 downto 10);
 
-    -- These fields are always extracted the same way
-    RegSel_A <= Instr(9 downto 7);
-    RegSel_B <= Instr(6 downto 4);
-    ImmVal   <= Instr(3 downto 0);
-    JumpAddr <= Instr(2 downto 0);
+    op_code <= Instruction(12 downto 10);
 
-    process(opcode)
+    process(op_code, Jump_Register_Value, Instruction)
     begin
-        LoadSel   <= '0';
-        AddSubSel <= '0';
-        JumpFlag  <= '0';
-        RegWrite  <= '0';
+        -- Default/reset values for outputs
+        Register_Enable        <= (others => '0');
+        Register_Select_A      <= (others => '0');
+        Register_Select_B      <= (others => '0');
+        Immediate_value        <= (others => '0');
+        Operation              <= '0';
+        Jump_flag              <= '0';
+        Jump_Address           <= (others => '0');
+        Load_select            <= "00";
+        Waiting_flag <= '0';
 
-        case opcode is
-            when "10" =>  -- MOVI: load immediate into register
-                LoadSel  <= '1';
-                RegWrite <= '1';
+        case op_code is
 
-            when "00" =>  -- ADD: Ra <- Ra + Rb
-                LoadSel   <= '0';
-                AddSubSel <= '0';
-                RegWrite  <= '1';
+            when MOVI =>
+                Register_Enable   <= Instruction(9 downto 7);
+                Immediate_value   <= Instruction(3 downto 0);
+                Load_select       <= "01";
 
-            when "01" =>  -- NEG: Ra <- 0 - Ra
-                -- In top-level: ALU_A = R0 (always 0), ALU_B = Ra
-                -- So ALU computes 0 - Ra = -Ra (two's complement)
-                LoadSel   <= '0';
-                AddSubSel <= '1';
-                RegWrite  <= '1';
+            when ADD =>
+                Register_Select_A <= Instruction(9 downto 7);
+                Register_Select_B <= Instruction(6 downto 4);
+                Register_Enable   <= Instruction(9 downto 7);
+                Operation         <= '0'; -- Add
 
-            when "11" =>  -- JZR: conditional jump, no register write
-                JumpFlag <= '1';
-                RegWrite <= '0';
+            when NEG =>
+                Register_Select_B <= Instruction(9 downto 7); -- Operand B is input
+                Register_Enable   <= Instruction(9 downto 7);
+                Operation         <= '1'; -- Negate
+
+            when JZR =>
+                Register_Select_A <= Instruction(9 downto 7);
+                if Jump_Register_Value = "0000" then
+                    Jump_flag    <= '1';
+                    Jump_Address <= Instruction(2 downto 0);
+                end if;
+
+            when INP =>
+                Register_Enable <= Instruction (9 downto 7);
+                Load_select <= "10";
+                
+            when HLT =>
+                Waiting_flag <= '1';
 
             when others =>
                 null;
         end case;
     end process;
+
 end Behavioral;

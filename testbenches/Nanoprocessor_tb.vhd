@@ -1,40 +1,88 @@
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use work.buses.all;
+use work.processor_components.all;
 
-entity Nanoprocessor_tb is
-end Nanoprocessor_tb;
+entity Processor_tb is
+end Processor_tb;
 
-architecture Behavioral of Nanoprocessor_tb is
-    component Nanoprocessor
-        Port (Clk_100MHz : in STD_LOGIC;
-              Reset : in STD_LOGIC;
-              LED : out STD_LOGIC_VECTOR(15 downto 0);
-              Seg : out STD_LOGIC_VECTOR(6 downto 0);
-              AN  : out STD_LOGIC_VECTOR(3 downto 0));
-    end component;
-    signal Clk   : STD_LOGIC := '0';
-    signal Reset : STD_LOGIC := '1';
-    signal LED   : STD_LOGIC_VECTOR(15 downto 0);
-    signal Seg   : STD_LOGIC_VECTOR(6 downto 0);
-    signal AN    : STD_LOGIC_VECTOR(3 downto 0);
+architecture Behavioral of Processor_tb is
+
+    signal Clk            : std_logic := '0';
+    signal Reset          : std_logic := '0';
+    signal Overflow       : std_logic;
+    signal Zero           : std_logic;
+    signal Data           : data_bus;
+    signal seg            : std_logic_vector(6 downto 0);
+    signal addr           : instruction_address;
+    signal anode          : bus_4_bit;
+    signal input_switches : data_bus := "1111";
+    signal input_ready    : std_logic := '0';
+
+    constant clk_period : time := 20 ns;
+
 begin
-    UUT: Nanoprocessor port map (
-        Clk_100MHz => Clk, Reset => Reset,
-        LED => LED, Seg => Seg, AN => AN);
 
-    -- 100 MHz clock
-    Clk <= NOT Clk after 5 ns;
+    -- Instantiate the Processor
+    uut: entity work.Processor
+        port map (
+            Clk            => Clk,
+            Reset          => Reset,
+            Overflow       => Overflow,
+            Zero           => Zero,
+            Data           => Data,
+            seg            => seg,
+            addr           => addr,
+            anode          => anode,
+            input_switches => input_switches,
+            input_ready    => input_ready
+        );
 
-    process
+    -- Clock generation
+    clk_process :process
     begin
-        Reset <= '1';
-        wait for 200 ns;
-        Reset <= '0';
-        -- With DIVIDER=5: slow_clk toggles every 50ns -> period = 100ns
-        -- 8 instructions * 100ns + margin = 1500ns
-        wait for 1500 ns;
-        -- LED(3:0) should now show "0110" (= decimal 6)
-        -- Verify in waveform viewer
+        while now < 5 ms loop
+            Clk <= '0';
+            wait for clk_period/2;
+            Clk <= '1';
+            wait for clk_period/2;
+        end loop;
         wait;
     end process;
+
+    -- Stimulus process
+    stim_proc: process
+    begin
+        -- Hold reset
+        Reset <= '1';
+        wait for 40 ns;
+        Reset <= '0';
+
+        -- Wait for some cycles
+        wait for 200 ns;
+
+        -- Trigger input wait (simulate that instruction has set internal_waiting high internally)
+        -- We'll simulate input_ready being pressed for INP instruction
+        input_ready <= '0';
+        wait for 100 ns;
+
+        -- Simulate input_ready button press
+        input_ready <= '1';
+        wait for 40 ns;
+        input_ready <= '0';
+
+        -- Wait to observe PC increment
+        wait for 200 ns;
+
+        -- Apply another press
+        input_ready <= '1';
+        wait for 40 ns;
+        input_ready <= '0';
+
+        wait for 400 ns;
+        wait;
+    end process;
+
 end Behavioral;

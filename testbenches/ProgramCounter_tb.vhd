@@ -1,29 +1,59 @@
+-- Test Bench for Program Counter
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity ProgramCounter_tb is
-end ProgramCounter_tb;
+entity TB_PC is
+    -- Port();
+end TB_PC;
 
-architecture Behavioral of ProgramCounter_tb is
-    component ProgramCounter
-        Port (Clk, Reset : in STD_LOGIC;
-              D : in STD_LOGIC_VECTOR(2 downto 0);
-              Q : out STD_LOGIC_VECTOR(2 downto 0));
-    end component;
-    signal Clk, Reset : STD_LOGIC := '0';
-    signal D, Q : STD_LOGIC_VECTOR(2 downto 0) := "000";
+architecture Behavioral of TB_PC is
+
+component Program_counter is
+    port ( PC_in : in STD_LOGIC_VECTOR(2 downto 0);
+    Reset : in STD_LOGIC;
+    Clk : in STD_LOGIC;
+    PC_out : out STD_LOGIC_VECTOR(2 downto 0));
+end component;
+
+signal A : STD_LOGIC_VECTOR(2 downto 0);
+signal Res : STD_LOGIC;
+signal Clk : STD_LOGIC;
+signal M : STD_LOGIC_VECTOR(2 downto 0);
+
+constant clk_period : time := 10 ns; --Clock period 10 ns
+
 begin
-    UUT: ProgramCounter port map (Clk=>Clk, Reset=>Reset, D=>D, Q=>Q);
-    Clk <= NOT Clk after 10 ns;
-    process
+
+    uut : Program_counter  port map (
+        PC_in => A, 
+        Reset => Res, 
+        Clk => Clk, 
+        PC_Out => M);
+
+    clock: process
     begin
-        Reset <= '1'; wait for 20 ns;
-        Reset <= '0';
-        D <= "001"; wait for 20 ns;  -- Q should become 001
-        D <= "010"; wait for 20 ns;  -- Q should become 010
-        D <= "111"; wait for 20 ns;  -- Q should become 111
-        Reset <= '1'; wait for 20 ns; -- Q should reset to 000
-        Reset <= '0';
+        Clk <= '0';
+        wait for clk_period/2;
+        Clk <= '1';
+        wait for clk_period/2;
+    end process;
+      
+    stim: process
+    begin
+        Res <= '1';
+        wait for clk_period/2;
+        Res <= '0';
+        A <= "010"; -- 2
+        wait for clk_period;
+        A <= "001"; -- 1
+        wait for clk_period;
+        A <= "000"; -- 0
+        wait for clk_period;
+        A <= "100"; -- 4
+        wait for clk_period;
+        A <= "111"; -- 7
+        wait for clk_period;
+        Res <= '1';
         wait;
     end process;
 end Behavioral;

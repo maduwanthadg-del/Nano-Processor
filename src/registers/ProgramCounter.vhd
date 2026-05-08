@@ -1,23 +1,29 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use work.buses.instruction_address;
 
-entity ProgramCounter is
+entity Program_counter is
     Port (
-        Clk   : in  STD_LOGIC;
-        Reset : in  STD_LOGIC;
-        D     : in  STD_LOGIC_VECTOR(2 downto 0);
-        Q     : out STD_LOGIC_VECTOR(2 downto 0)
+        Reset   : in  STD_LOGIC;
+        Clk     : in  STD_LOGIC;
+        PC_in   : in  instruction_address;
+        PC_out  : out instruction_address
     );
-end ProgramCounter;
+end Program_counter;
 
-architecture Behavioral of ProgramCounter is
-    component DFF
-        Port (D, Clk, Reset : in STD_LOGIC; Q : out STD_LOGIC);
-    end component;
+architecture Behavioral of Program_counter is
+    signal PC_reg : instruction_address;
 begin
-    FF0: DFF port map (D=>D(0), Clk=>Clk, Reset=>Reset, Q=>Q(0));
-    FF1: DFF port map (D=>D(1), Clk=>Clk, Reset=>Reset, Q=>Q(1));
-    FF2: DFF port map (D=>D(2), Clk=>Clk, Reset=>Reset, Q=>Q(2));
+
+    process(Clk, Reset)  -- Reset added to sensitivity list
+    begin
+        if Reset = '1' then
+            PC_reg <= "000";  -- Asynchronous reset
+        elsif rising_edge(Clk) then
+            PC_reg <= PC_in;
+        end if;
+    end process;
+
+    PC_out <= PC_reg;
+
 end Behavioral;

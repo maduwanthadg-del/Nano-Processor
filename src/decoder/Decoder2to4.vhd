@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 05/13/2025 01:15:06 PM
+-- Create Date: 03/04/2025 01:38:33 PM
 -- Design Name: 
--- Module Name: MUX_2_4 - Behavioral
+-- Module Name: Decoder_2_to_4 - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -21,7 +21,6 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.buses.data_bus;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,25 +31,19 @@ use work.buses.data_bus;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity MUX_2_4 is
-    Port ( D0 : in data_bus;
-           D1 : in data_bus;
-           S : in STD_LOGIC;
-           D_out : out data_bus);
-end MUX_2_4;
+entity Decoder_2_to_4 is
+    Port ( I : in STD_LOGIC_VECTOR (1 downto 0);
+           EN : in STD_LOGIC;
+           Y : out STD_LOGIC_VECTOR (3 downto 0));
+end Decoder_2_to_4;
 
-architecture Behavioral of MUX_2_4 is
+architecture Behavioral of Decoder_2_to_4 is
 
 begin
-
-process(D0, D1, S)  -- mux logic
-begin
-    if (S ='0') then
-        D_out <= D0;   
-    else
-        D_out <= D1;
-    end if;
-end process;
+    Y(0)<= EN AND NOT(I(1) OR I(0)) ;
+    Y(1)<= EN AND NOT(I(1)) AND I(0);
+    Y(2)<= EN AND I(1) AND NOT(I(0));
+    Y(3)<= EN AND I(1) AND I(0);
 
 
 end Behavioral;

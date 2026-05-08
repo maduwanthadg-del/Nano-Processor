@@ -1,38 +1,117 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.buses.all;
 
-entity RegisterBank is
-    Port (
-        Clk    : in  STD_LOGIC;
-        Reset  : in  STD_LOGIC;
-        RegEn  : in  STD_LOGIC_VECTOR(7 downto 0);
-        DataIn : in  STD_LOGIC_VECTOR(3 downto 0);
-        R0out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R1out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R2out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R3out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R4out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R5out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R6out  : out STD_LOGIC_VECTOR(3 downto 0);
-        R7out  : out STD_LOGIC_VECTOR(3 downto 0)
+entity Register_Bank is
+    Port ( 
+        Reg_En     : in register_address;
+        Res        : in STD_LOGIC;
+        Clk        : in STD_LOGIC;
+        Data       : in data_bus;
+        Data_Buses : out data_buses
     );
-end RegisterBank;
+end Register_Bank;
 
-architecture Behavioral of RegisterBank is
-    component Reg4bit
-        Port (D : in STD_LOGIC_VECTOR(3 downto 0);
-              Clk, Reset, En : in STD_LOGIC;
-              Q : out STD_LOGIC_VECTOR(3 downto 0));
+architecture Behavioral of Register_Bank is
+
+    component Reg
+        Port (
+            Data  : in STD_LOGIC_VECTOR (3 downto 0);
+            En    : in STD_LOGIC;
+            Clk   : in STD_LOGIC;
+            Reset : in STD_LOGIC;
+            Q     : out STD_LOGIC_VECTOR (3 downto 0)
+        );
     end component;
-begin
-    -- R0 is permanently hardwired to 0000 (read-only, never written)
-    R0out <= "0000";
 
-    R1: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(1), Q=>R1out);
-    R2: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(2), Q=>R2out);
-    R3: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(3), Q=>R3out);
-    R4: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(4), Q=>R4out);
-    R5: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(5), Q=>R5out);
-    R6: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(6), Q=>R6out);
-    R7: Reg4bit port map (D=>DataIn, Clk=>Clk, Reset=>Reset, En=>RegEn(7), Q=>R7out);
+    signal Reg_Sel : STD_LOGIC_VECTOR(7 downto 0);
+
+begin
+
+    Decoder_3_to_8_0 : entity work.Decoder_3_to_8
+        port map(
+            I => Reg_En,
+            Y => Reg_Sel
+        );
+
+    -- Read-Only Register (Register 0)
+    reg0: Reg
+        port map(
+            Data  => "0000",
+            Reset => Res,
+            En    => '1',
+            Clk   => Clk,
+            Q     => Data_Buses(0)
+        );
+
+    -- Register 1
+    reg1: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(1),
+            Clk   => Clk,
+            Q     => Data_Buses(1)
+        );
+
+    -- Register 2
+    reg2: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(2),
+            Clk   => Clk,
+            Q     => Data_Buses(2)
+        );
+
+    -- Register 3
+    reg3: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(3),
+            Clk   => Clk,
+            Q     => Data_Buses(3)
+        );
+
+    -- Register 4
+    reg4: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(4),
+            Clk   => Clk,
+            Q     => Data_Buses(4)
+        );
+
+    -- Register 5
+    reg5: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(5),
+            Clk   => Clk,
+            Q     => Data_Buses(5)
+        );
+
+    -- Register 6
+    reg6: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(6),
+            Clk   => Clk,
+            Q     => Data_Buses(6)
+        );
+
+    -- Register 7
+    reg7: Reg
+        port map(
+            Data  => Data,
+            Reset => Res,
+            En    => Reg_Sel(7),
+            Clk   => Clk,
+            Q     => Data_Buses(7)
+        );
+
 end Behavioral;

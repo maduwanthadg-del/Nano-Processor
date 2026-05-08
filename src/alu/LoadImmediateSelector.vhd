@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 05/13/2025 01:15:06 PM
+-- Create Date: 05/18/2025 03:49:06 AM
 -- Design Name: 
--- Module Name: MUX_2_4 - Behavioral
+-- Module Name: Load_Immediate_Selector - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -22,7 +22,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.buses.data_bus;
-
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -32,25 +31,25 @@ use work.buses.data_bus;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity MUX_2_4 is
-    Port ( D0 : in data_bus;
-           D1 : in data_bus;
-           S : in STD_LOGIC;
-           D_out : out data_bus);
-end MUX_2_4;
+entity Load_Immediate_Selector is
+      Port (
+          ALU_value : in data_bus;
+          immediate_value : in data_bus;
+          Load_select: in std_logic;
+          Out_value: out data_bus );
+end Load_Immediate_Selector;
 
-architecture Behavioral of MUX_2_4 is
+architecture Behavioral of Load_Immediate_Selector is
 
 begin
 
-process(D0, D1, S)  -- mux logic
-begin
-    if (S ='0') then
-        D_out <= D0;   
-    else
-        D_out <= D1;
-    end if;
-end process;
+
+    MUX : entity work.MUX_2_4
+        port map (
+            D0 => ALU_value,
+            D1 => immediate_value,
+            S  => Load_select,
+            D_out  => Out_value);
 
 
 end Behavioral;

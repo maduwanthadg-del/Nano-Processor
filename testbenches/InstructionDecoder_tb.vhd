@@ -1,39 +1,60 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.processor_components.Instruction_Decoder;
 
-entity InstructionDecoder_tb is
-end InstructionDecoder_tb;
 
-architecture Behavioral of InstructionDecoder_tb is
-    component InstructionDecoder
-        Port (Instr : in STD_LOGIC_VECTOR(11 downto 0);
-              RegSel_A, RegSel_B : out STD_LOGIC_VECTOR(2 downto 0);
-              LoadSel, AddSubSel, JumpFlag, RegWrite : out STD_LOGIC;
-              ImmVal   : out STD_LOGIC_VECTOR(3 downto 0);
-              JumpAddr : out STD_LOGIC_VECTOR(2 downto 0));
-    end component;
-    signal Instr                              : STD_LOGIC_VECTOR(11 downto 0);
-    signal RegSel_A, RegSel_B, JumpAddr      : STD_LOGIC_VECTOR(2 downto 0);
-    signal LoadSel, AddSubSel, JumpFlag, RegWrite : STD_LOGIC;
-    signal ImmVal                             : STD_LOGIC_VECTOR(3 downto 0);
+entity TB_IDecoder is
+    -- port();
+end TB_IDecoder;
+
+architecture Behavioral of TB_IDecoder is
+
+signal I: std_logic_vector(11 downto 0);
+signal RCJump: std_logic_vector(3 downto 0):="0001";
+signal REn: std_logic_vector(2 downto 0);
+signal RSA: std_logic_vector(2 downto 0);
+signal RSB: std_logic_vector(2 downto 0);
+signal AS:std_logic;
+signal IM: std_logic_vector(3 downto 0);
+signal J: std_logic;
+signal JA: std_logic_vector(2 downto 0);
+signal L: std_logic; 
+signal Clk: std_logic; -- Clock
 begin
-    UUT: InstructionDecoder port map (
-        Instr=>Instr, RegSel_A=>RegSel_A, RegSel_B=>RegSel_B,
-        LoadSel=>LoadSel, AddSubSel=>AddSubSel, ImmVal=>ImmVal,
-        JumpFlag=>JumpFlag, JumpAddr=>JumpAddr, RegWrite=>RegWrite);
+    UUT: Instruction_Decoder port map(
+        Instruction => I,
+        Jump_register_value => RCJump,
+        Register_enable => REn,
+        Register_Select_A => RSA,
+        Register_Select_B => RSB,
+        Operation => AS,
+        Immediate_value => IM,
+        Jump_flag => J,
+        Jump_address => JA,
+        Load_select => L
+    );
 
-    process
+    clock: process
     begin
-        -- MOVI R1, 1 -> LoadSel=1, RegWrite=1, RegSel_A=001, ImmVal=0001
-        Instr <= "100010000001"; wait for 20 ns;
-        -- ADD R1, R2 -> AddSubSel=0, RegWrite=1, RegSel_A=001, RegSel_B=010
-        Instr <= "000010100000"; wait for 20 ns;
-        -- NEG R3     -> AddSubSel=1, RegWrite=1, RegSel_A=011
-        Instr <= "010110000000"; wait for 20 ns;
-        -- JZR R0, 7  -> JumpFlag=1, RegWrite=0, JumpAddr=111
-        Instr <= "110000000111"; wait for 20 ns;
-        -- MOVI R7, 0 -> LoadSel=1, RegWrite=1, RegSel_A=111, ImmVal=0000
-        Instr <= "101110000000"; wait for 20 ns;
-        wait;
-    end process;
+        Clk <= '1';
+        wait for 50ns;
+        Clk <= '0';
+        wait for 50ns;
+    end process clock;
+
+    stim: process
+    begin
+        I <= "101010001111"; --MOVI 5, 15
+        wait for 100ns;
+        I <= "001111000000"; --ADD 7, 4
+        wait for 100ns; 
+        I <= "011100000000"; -- NEG 6
+        wait for 100ns;
+        I <= "110110000010"; -- JZR 3, 2
+        wait for 100ns;
+        RCJump <= "0000";
+        I <= "110110000010"; -- JZR 3, 2
+        wait for 100ns;
+    end process stim;
+        
 end Behavioral;

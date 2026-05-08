@@ -1,31 +1,58 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 04/10/2025 01:04:37 PM
+-- Design Name: 
+-- Module Name: Slow_Clk - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
 
-entity SlowClock is
-    Generic (
-        DIVIDER : integer := 5
-    );
-    Port (
-        Clk_in  : in  STD_LOGIC;
-        Clk_out : out STD_LOGIC
-    );
-end SlowClock;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-architecture Behavioral of SlowClock is
-    signal count   : integer range 0 to 200000000 := 0;
-    signal clk_reg : STD_LOGIC := '0';
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity Slow_Clk is
+    Port ( Clk_in : in STD_LOGIC;
+           Clk_out : out STD_LOGIC);
+end Slow_Clk;
+
+architecture Behavioral of Slow_Clk is
+    
+    signal count : integer := 1;
+    signal clk_status : std_logic := '0';
+    
 begin
-    process(Clk_in)
-    begin
-        if rising_edge(Clk_in) then
-            if count = DIVIDER - 1 then
-                count   <= 0;
-                clk_reg <= NOT clk_reg;
-            else
-                count <= count + 1;
+
+    process (Clk_in) begin
+        if (rising_edge(Clk_in)) then
+            count <= count + 1;
+            if (count = 50000000) then -- for simulation purposes set this value to 5
+                clk_status <= not (clk_status);
+                clk_out <= clk_status;
+                count <= 1;
             end if;
         end if;
     end process;
-    Clk_out <= clk_reg;
+
+
 end Behavioral;

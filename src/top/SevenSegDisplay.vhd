@@ -1,40 +1,61 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 04/25/2025 01:58:06 AM
+-- Design Name: 
+-- Module Name: LUT_16_7 - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
-entity SevenSegDisplay is
-    Port (
-        Num : in  STD_LOGIC_VECTOR(3 downto 0);
-        Seg : out STD_LOGIC_VECTOR(6 downto 0);
-        AN  : out STD_LOGIC_VECTOR(3 downto 0)
+entity LUT_16_7 is
+    Port ( address : in STD_LOGIC_VECTOR (3 downto 0);
+           data : out STD_LOGIC_VECTOR (6 downto 0));
+end LUT_16_7;
+
+architecture Behavioral of LUT_16_7 is
+
+    type rom_type is array (0 to 15) of std_logic_vector (6 downto 0);
+    
+        signal sevenSegment_ROM : rom_type := (
+        "1000000", -- 0
+        "1111001", -- 1
+        "0100100", -- 2
+        "0110000", -- 3
+        "0011001", -- 4
+        "0010010", -- 5
+        "0000010", -- 6
+        "1111000", -- 7
+        "0000000", -- 8
+        "0010000", -- 9
+        "0001000", -- A
+        "0000011", -- b
+        "1000110", -- C
+        "0100001", -- d
+        "0000110", -- E
+        "0001110"  -- F
     );
-end SevenSegDisplay;
 
-architecture Behavioral of SevenSegDisplay is
+            
 begin
-    -- Enable only the rightmost digit, disable the others
-    AN <= "1110";
 
-    process(Num)
-    begin
-        case Num is
-            --              GFEDCBA
-            when "0000" => Seg <= "1000000";  -- 0
-            when "0001" => Seg <= "1111001";  -- 1
-            when "0010" => Seg <= "0100100";  -- 2
-            when "0011" => Seg <= "0110000";  -- 3
-            when "0100" => Seg <= "0011001";  -- 4
-            when "0101" => Seg <= "0010010";  -- 5
-            when "0110" => Seg <= "0000010";  -- 6
-            when "0111" => Seg <= "1111000";  -- 7
-            when "1000" => Seg <= "0000000";  -- 8
-            when "1001" => Seg <= "0010000";  -- 9
-            when "1010" => Seg <= "0001000";  -- A
-            when "1011" => Seg <= "0000011";  -- b
-            when "1100" => Seg <= "1000110";  -- C
-            when "1101" => Seg <= "0100001";  -- d
-            when "1110" => Seg <= "0000110";  -- E
-            when "1111" => Seg <= "0001110";  -- F
-            when others => Seg <= "1111111";  -- All off
-        end case;
-    end process;
+    data <= sevenSegment_Rom(to_integer(unsigned(address)));
+
+
+
 end Behavioral;

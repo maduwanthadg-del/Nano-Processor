@@ -1,24 +1,29 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-entity Mux8way4bit is
-    Port (
-        D0, D1, D2, D3,
-        D4, D5, D6, D7 : in  STD_LOGIC_VECTOR(3 downto 0);
-        Sel             : in  STD_LOGIC_VECTOR(2 downto 0);
-        Y               : out STD_LOGIC_VECTOR(3 downto 0)
-    );
-end Mux8way4bit;
+use work.buses.all;
 
-architecture Behavioral of Mux8way4bit is
+entity MUX_8_4 is
+    Port (
+        S : in bus_3_bit;
+        D : in data_buses;
+        Y : out bus_4_bit
+    );
+end MUX_8_4;
+
+architecture Behavioral of MUX_8_4 is
 begin
-    with Sel select
-        Y <= D0 when "000",
-             D1 when "001",
-             D2 when "010",
-             D3 when "011",
-             D4 when "100",
-             D5 when "101",
-             D6 when "110",
-             D7 when "111",
-             "0000" when others;
+    process(S, D)
+    begin
+        case S is
+            when "000" => Y <= D(0);
+            when "001" => Y <= D(1);
+            when "010" => Y <= D(2);
+            when "011" => Y <= D(3);
+            when "100" => Y <= D(4);
+            when "101" => Y <= D(5);
+            when "110" => Y <= D(6);
+            when "111" => Y <= D(7);
+            when others => Y <= (others => '0');
+        end case;
+    end process;
 end Behavioral;
