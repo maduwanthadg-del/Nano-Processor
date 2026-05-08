@@ -33,6 +33,7 @@ signal B_0,B_1,B_2,B_3 : std_logic;
 
 begin
     
+    -- CTR acts as both carry-in for the first adder and control for subtraction (2's complement)
     B_0 <= B(0) XOR CTR;
     B_1 <= B(1) XOR CTR;
     B_2 <= B(2) XOR CTR;
@@ -71,6 +72,7 @@ begin
         C_out => Overflow
     );
     
+    -- Check if the 4-bit result is exactly zero
     Zero <= NOT(S(0) OR S(1) OR S(2) OR S(3));
            
 end Behavioral;

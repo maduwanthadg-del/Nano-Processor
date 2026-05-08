@@ -16,10 +16,10 @@ begin
     process (Clk_in) begin
         if (rising_edge(Clk_in)) then
             count <= count + 1;
-            if (count = 50000000) then
-                clk_status <= not (clk_status);
+            if (count = 50000000) then -- Generate 1Hz clock from 100MHz input clock
+                clk_status <= not (clk_status); -- Toggle the output clock state
                 clk_out <= clk_status;
-                count <= 1;
+                count <= 1; -- Reset counter
             end if;
         end if;
     end process;

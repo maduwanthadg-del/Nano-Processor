@@ -35,23 +35,25 @@ begin
    
 	Decoder : Decoder_2_to_4
 	port map(
-		I => Instruction_bus(11 downto 10), 
+		I => Instruction_bus(11 downto 10), -- Highest 2 bits determine the opcode
 		En => '1', 
-		Y(0) => ADD, 
-		Y(1) => NEG, 
-		Y(2) => MOVI, 
-		Y(3) => JZR
+		Y(0) => ADD,  -- Opcode 00: ADD
+		Y(1) => NEG,  -- Opcode 01: NEG
+		Y(2) => MOVI, -- Opcode 10: MOVI
+		Y(3) => JZR   -- Opcode 11: JZR
 	);
  
  
-	Load_sel <= MOVI;
-	Add_sub_sel <= NEG;
-	Reg_Sel_B <= Instruction_bus (9 downto 7);
-	Reg_Sel_A <= Instruction_bus (6 downto 4);
-	Reg_en <= Instruction_bus (9 downto 7);
-	Immediate_val <= Instruction_bus (3 downto 0);
+	Load_sel <= MOVI; -- Select immediate value for loading if instruction is MOVI
+	Add_sub_sel <= NEG; -- Select subtract mode in ALU if instruction is NEG
+	Reg_Sel_B <= Instruction_bus (9 downto 7); -- Source register B
+	Reg_Sel_A <= Instruction_bus (6 downto 4); -- Source register A / Destination register
+	Reg_en <= Instruction_bus (9 downto 7); -- Enable signal for destination register
+	Immediate_val <= Instruction_bus (3 downto 0); -- Lowest 4 bits hold the immediate value
+	
+	-- Jump if JZR is active AND the specified register is empty (zero flag is set)
 	Jmp_flag <= JZR AND (NOT(Jump_check(0) or Jump_check(1) or Jump_check(2) or Jump_check(3)));
-	Jmp_Addr <= Instruction_bus (2 downto 0);
+	Jmp_Addr <= Instruction_bus (2 downto 0); -- Jump address is the lowest 3 bits
  
  
  
