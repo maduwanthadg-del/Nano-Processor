@@ -19,7 +19,7 @@ begin
         if increment_enable = '1' then
             temp := unsigned(in_address) + 1;
         else
-            temp := unsigned(in_address);  -- Hold the current address
+            temp := unsigned(in_address);
         end if;
         out_address <= std_logic_vector(temp);
     end process;

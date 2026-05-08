@@ -4,7 +4,6 @@ use work.processor_components.Instruction_Decoder;
 
 
 entity TB_IDecoder is
-    -- port();
 end TB_IDecoder;
 
 architecture Behavioral of TB_IDecoder is
@@ -19,7 +18,7 @@ signal IM: std_logic_vector(3 downto 0);
 signal J: std_logic;
 signal JA: std_logic_vector(2 downto 0);
 signal L: std_logic; 
-signal Clk: std_logic; -- Clock
+signal Clk: std_logic;
 begin
     UUT: Instruction_Decoder port map(
         Instruction => I,
@@ -44,16 +43,16 @@ begin
 
     stim: process
     begin
-        I <= "101010001111"; --MOVI 5, 15
+        I <= "101010001111";
         wait for 100ns;
-        I <= "001111000000"; --ADD 7, 4
+        I <= "001111000000";
         wait for 100ns; 
-        I <= "011100000000"; -- NEG 6
+        I <= "011100000000";
         wait for 100ns;
-        I <= "110110000010"; -- JZR 3, 2
+        I <= "110110000010";
         wait for 100ns;
         RCJump <= "0000";
-        I <= "110110000010"; -- JZR 3, 2
+        I <= "110110000010";
         wait for 100ns;
     end process stim;
         

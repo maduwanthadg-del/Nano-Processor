@@ -1,9 +1,7 @@
--- Test Bench for Program Counter
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity TB_PC is
-    -- Port();
 end TB_PC;
 
 architecture Behavioral of TB_PC is
@@ -20,7 +18,7 @@ signal Res : STD_LOGIC;
 signal Clk : STD_LOGIC;
 signal M : STD_LOGIC_VECTOR(2 downto 0);
 
-constant clk_period : time := 10 ns; --Clock period 10 ns
+constant clk_period : time := 10 ns;
 
 begin
 
@@ -43,15 +41,15 @@ begin
         Res <= '1';
         wait for clk_period/2;
         Res <= '0';
-        A <= "010"; -- 2
+        A <= "010";
         wait for clk_period;
-        A <= "001"; -- 1
+        A <= "001";
         wait for clk_period;
-        A <= "000"; -- 0
+        A <= "000";
         wait for clk_period;
-        A <= "100"; -- 4
+        A <= "100";
         wait for clk_period;
-        A <= "111"; -- 7
+        A <= "111";
         wait for clk_period;
         Res <= '1';
         wait;

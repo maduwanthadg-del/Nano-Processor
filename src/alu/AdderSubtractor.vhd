@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 05/18/2025 01:59:13 AM
--- Design Name: 
--- Module Name: Adder_Subtractor - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: Adder/Subtractor using 4-bit Ripple Carry Adder
--- 
--- Dependencies: RCA_4 (4-bit Ripple Carry Adder)
--- 
--- Revision:
--- Revision 0.02 - Added subtraction logic by XORing B with CTRL
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -25,7 +6,7 @@ entity Adder_Subtractor is
       Port (
           A : in std_logic_vector(3 downto 0);
           B : in std_logic_vector(3 downto 0);
-          CTRL : in std_logic; -- 0 = Add, 1 = Subtract
+          CTRL : in std_logic;
           S : out std_logic_vector(3 downto 0);
           Zero : out std_logic;
           Overflow : out std_logic
@@ -39,7 +20,7 @@ architecture Behavioral of Adder_Subtractor is
 
 begin
 
-    -- XOR each bit of B with CTRL to invert B if CTRL=1 (subtraction)
+    -- XOR with CTRL for 2's complement: CTRL=0 passes B through, CTRL=1 inverts B
     B_mod(0) <= B(0) xor CTRL;
     B_mod(1) <= B(1) xor CTRL;
     B_mod(2) <= B(2) xor CTRL;
@@ -55,6 +36,7 @@ begin
             C_out => Overflow
         );
 
+    -- Zero flag: HIGH when all 4 result bits are zero
     Zero <= NOT(internal_s(0) OR internal_s(1) OR internal_s(2) OR internal_s(3));
 
     S <= internal_s;

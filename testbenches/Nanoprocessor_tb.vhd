@@ -25,7 +25,6 @@ architecture Behavioral of Processor_tb is
 
 begin
 
-    -- Instantiate the Processor
     uut: entity work.Processor
         port map (
             Clk            => Clk,
@@ -40,7 +39,6 @@ begin
             input_ready    => input_ready
         );
 
-    -- Clock generation
     clk_process :process
     begin
         while now < 5 ms loop
@@ -52,31 +50,23 @@ begin
         wait;
     end process;
 
-    -- Stimulus process
     stim_proc: process
     begin
-        -- Hold reset
         Reset <= '1';
         wait for 40 ns;
         Reset <= '0';
 
-        -- Wait for some cycles
         wait for 200 ns;
 
-        -- Trigger input wait (simulate that instruction has set internal_waiting high internally)
-        -- We'll simulate input_ready being pressed for INP instruction
         input_ready <= '0';
         wait for 100 ns;
 
-        -- Simulate input_ready button press
         input_ready <= '1';
         wait for 40 ns;
         input_ready <= '0';
 
-        -- Wait to observe PC increment
         wait for 200 ns;
 
-        -- Apply another press
         input_ready <= '1';
         wait for 40 ns;
         input_ready <= '0';

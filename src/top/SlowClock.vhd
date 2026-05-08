@@ -1,35 +1,8 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 04/10/2025 01:04:37 PM
--- Design Name: 
--- Module Name: Slow_Clk - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity Slow_Clk is
     Port ( Clk_in : in STD_LOGIC;
@@ -46,10 +19,10 @@ begin
     process (Clk_in) begin
         if (rising_edge(Clk_in)) then
             count <= count + 1;
-            if (count = 50000000) then -- for simulation purposes set this value to 5
-                clk_status <= not (clk_status);
+            if (count = 50000000) then -- Divide 100MHz to ~1Hz (change to 5 for simulation)
+                clk_status <= not (clk_status); -- Toggle output clock state
                 clk_out <= clk_status;
-                count <= 1;
+                count <= 1; -- Reset counter
             end if;
         end if;
     end process;

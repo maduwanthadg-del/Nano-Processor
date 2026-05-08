@@ -15,10 +15,10 @@ architecture Behavioral of Program_counter is
     signal PC_reg : instruction_address;
 begin
 
-    process(Clk, Reset)  -- Reset added to sensitivity list
+    process(Clk, Reset)
     begin
         if Reset = '1' then
-            PC_reg <= "000";  -- Asynchronous reset
+            PC_reg <= "000";
         elsif rising_edge(Clk) then
             PC_reg <= PC_in;
         end if;

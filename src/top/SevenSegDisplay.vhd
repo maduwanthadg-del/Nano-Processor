@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 04/25/2025 01:58:06 AM
--- Design Name: 
--- Module Name: LUT_16_7 - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 
 
 library IEEE;
@@ -32,6 +13,7 @@ architecture Behavioral of LUT_16_7 is
 
     type rom_type is array (0 to 15) of std_logic_vector (6 downto 0);
     
+        -- Active-low 7-segment patterns: '0' = segment ON, '1' = segment OFF
         signal sevenSegment_ROM : rom_type := (
         "1000000", -- 0
         "1111001", -- 1
@@ -54,8 +36,8 @@ architecture Behavioral of LUT_16_7 is
             
 begin
 
+    -- Convert 4-bit binary value to 7-segment display pattern
     data <= sevenSegment_Rom(to_integer(unsigned(address)));
-
 
 
 end Behavioral;

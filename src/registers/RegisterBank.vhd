@@ -34,7 +34,6 @@ begin
             Y => Reg_Sel
         );
 
-    -- Read-Only Register (Register 0)
     reg0: Reg
         port map(
             Data  => "0000",
@@ -44,7 +43,6 @@ begin
             Q     => Data_Buses(0)
         );
 
-    -- Register 1
     reg1: Reg
         port map(
             Data  => Data,
@@ -54,7 +52,6 @@ begin
             Q     => Data_Buses(1)
         );
 
-    -- Register 2
     reg2: Reg
         port map(
             Data  => Data,
@@ -64,7 +61,6 @@ begin
             Q     => Data_Buses(2)
         );
 
-    -- Register 3
     reg3: Reg
         port map(
             Data  => Data,
@@ -74,7 +70,6 @@ begin
             Q     => Data_Buses(3)
         );
 
-    -- Register 4
     reg4: Reg
         port map(
             Data  => Data,
@@ -84,7 +79,6 @@ begin
             Q     => Data_Buses(4)
         );
 
-    -- Register 5
     reg5: Reg
         port map(
             Data  => Data,
@@ -94,7 +88,6 @@ begin
             Q     => Data_Buses(5)
         );
 
-    -- Register 6
     reg6: Reg
         port map(
             Data  => Data,
@@ -104,7 +97,6 @@ begin
             Q     => Data_Buses(6)
         );
 
-    -- Register 7
     reg7: Reg
         port map(
             Data  => Data,

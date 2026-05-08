@@ -1,19 +1,16 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.buses.all;               -- for data_bus, instruction_address, bus_4_bit
-use work.processor_components.all;-- for your sub-components (slow clock, decoder, etc.)
+use work.buses.all;
+use work.processor_components.all;
 
 entity TB_Processor is
---  No ports in a testbench
 end TB_Processor;
 
 architecture Behavioral of TB_Processor is
 
-    -- Clock & Reset
     signal Clock          : std_logic := '0';
     signal Reset          : std_logic := '1';
 
-    -- Top-level I/O to DUT
     signal Data           : data_bus;
     signal Overflow, Zero : std_logic;
     signal seg            : std_logic_vector(6 downto 0);
@@ -24,9 +21,6 @@ architecture Behavioral of TB_Processor is
 
 begin
 
-    ----------------------------------------------------------------
-    -- Instantiate the Device Under Test
-    ----------------------------------------------------------------
     DUT: entity work.Processor
         port map (
             Clk            => Clock,
@@ -41,9 +35,6 @@ begin
             input_ready    => input_ready
         );
 
-    ----------------------------------------------------------------
-    -- Clock generation: 50 MHz (20 ns period)
-    ----------------------------------------------------------------
     clk_proc: process
     begin
         while true loop
@@ -52,39 +43,27 @@ begin
         end loop;
     end process clk_proc;
 
-    ----------------------------------------------------------------
-    -- Reset pulse
-    ----------------------------------------------------------------
     reset_proc: process
     begin
-        -- hold in reset for 4 clock cycles
         Reset <= '1';
         wait for 80 ns;
         Reset <= '0';
         wait;
     end process reset_proc;
 
-    ----------------------------------------------------------------
-    -- Stimulus: exercise an INP into R7
-    ----------------------------------------------------------------
     stim_proc: process
     begin
-        -- wait for reset release
         wait until Reset = '0';
         wait until rising_edge(Clock);
 
-        -- Issue an INP instruction at ROM address 0
-        -- (You should have your Program_ROM initialized accordingly.)
-        -- Now drive switches and pulse input_ready
-        input_switches <= "1010";      -- example data
-        wait for 15 ns;                -- sometime during the clock high
+        input_switches <= "1010";
+        wait for 15 ns;
         input_ready    <= '1';
-        wait for 20 ns;                -- one full clock
+        wait for 20 ns;
         input_ready    <= '0';
 
-        -- Observe Data, seg, etc.
         wait for 200 ns;
-        wait;  -- finish
+        wait;
     end process stim_proc;
 
 end Behavioral;

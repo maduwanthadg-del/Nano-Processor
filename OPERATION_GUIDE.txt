@@ -1,0 +1,251 @@
+================================================================================
+       NANO-PROCESSOR (EXTENDED VERSION) - PRACTICAL OPERATION GUIDE
+                        (Basys3 Rev B Board)
+================================================================================
+
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+This is the Extended Version of the 4-bit Nano-Processor implemented on the
+Digilent Basys3 FPGA board. Compared to the base version, this extended
+processor features:
+
+  - A 13-bit instruction bus (up from 12-bit)
+  - 6 opcodes: ADD, NEG, MOVI, JZR, INP (new), and HLT (new)
+  - External data input via switches (SW0-SW3)
+  - An input confirmation button (BTNR)
+  - VHDL packages for bus types, opcodes, and component declarations
+  - A 3-way MUX for selecting between ALU result, immediate value, or switch input
+
+The processor executes instructions at approximately 1 Hz (one per second).
+
+
+2. BOARD SETUP & PROGRAMMING
+--------------------------------------------------------------------------------
+  - Connect the Basys3 board to your PC via USB.
+  - Open Xilinx Vivado and use the Hardware Manager to program the board
+    with the generated bitstream file.
+  - Ensure all switches (SW0-SW15) are in the DOWN position before starting.
+
+
+3. BUTTONS
+--------------------------------------------------------------------------------
+
+  +-----------+--------+-----------+--------------------------------------------+
+  | Button    | Pin    | Signal    | Function                                   |
+  +-----------+--------+-----------+--------------------------------------------+
+  | BTNC      | U18    | Reset     | RESET: Active-high asynchronous reset.     |
+  | (Center)  |        |           | Press and hold to reset the processor.     |
+  |           |        |           | Clears all registers to "0000" and resets  |
+  |           |        |           | the Program Counter to address "000".      |
+  |           |        |           | Release to begin program execution.        |
+  +-----------+--------+-----------+--------------------------------------------+
+  | BTNR      | T17    | input_    | INPUT CONFIRM: Used with the INP opcode.   |
+  | (Right)   |        | ready     | When the processor reaches an INP          |
+  |           |        |           | instruction, it halts and waits. Set the   |
+  |           |        |           | desired 4-bit value on switches SW0-SW3,   |
+  |           |        |           | then press BTNR to confirm the input.      |
+  |           |        |           | The processor resumes after confirmation.  |
+  +-----------+--------+-----------+--------------------------------------------+
+
+
+4. SWITCH MAPPING (INPUT)
+--------------------------------------------------------------------------------
+
+  +----------+--------+--------------------+------------------------------------+
+  | Switch   | Pin    | Signal             | Description                        |
+  +----------+--------+--------------------+------------------------------------+
+  | SW0      | V17    | input_switches[0]  | Input data Bit 0 (LSB)             |
+  | SW1      | V16    | input_switches[1]  | Input data Bit 1                   |
+  | SW2      | W16    | input_switches[2]  | Input data Bit 2                   |
+  | SW3      | W17    | input_switches[3]  | Input data Bit 3 (MSB)             |
+  +----------+--------+--------------------+------------------------------------+
+
+  These 4 switches are read by the processor when an INP instruction is
+  executed. Set the binary value on the switches BEFORE pressing BTNR.
+
+  Example: To input the value 5 (binary 0101), set SW0=ON, SW1=OFF,
+           SW2=ON, SW3=OFF, then press BTNR.
+
+
+5. LED MAPPING (OUTPUT)
+--------------------------------------------------------------------------------
+The Basys3 board has 16 LEDs (LD0-LD15). This design uses the following:
+
+  +--------+--------+--------------------+--------------------------------------+
+  | LED    | Pin    | Signal             | Description                          |
+  +--------+--------+--------------------+--------------------------------------+
+  | LD0    | U16    | Data[0]            | Register 7, Bit 0 (LSB)              |
+  | LD1    | E19    | Data[1]            | Register 7, Bit 1                    |
+  | LD2    | U19    | Data[2]            | Register 7, Bit 2                    |
+  | LD3    | V19    | Data[3]            | Register 7, Bit 3 (MSB)              |
+  +--------+--------+--------------------+--------------------------------------+
+  | LD9    | V3     | addr[0]            | Program Counter Address, Bit 0 (LSB) |
+  | LD10   | W3     | addr[1]            | Program Counter Address, Bit 1       |
+  | LD11   | U3     | addr[2]            | Program Counter Address, Bit 2 (MSB) |
+  | LD12   | P3     | addr[3]            | (Extended address bit, if used)       |
+  +--------+--------+--------------------+--------------------------------------+
+  | LD14   | P1     | Overflow           | Overflow Flag from the ALU            |
+  | LD15   | L1     | Zero               | Zero Flag from the ALU               |
+  +--------+--------+--------------------+--------------------------------------+
+
+  - LD0-LD3: Continuously display the binary value of Register 7 (R7),
+    which is the output/accumulator register.
+  - LD9-LD12: Show the current Program Counter address in binary, so you
+    can track which instruction is currently being executed.
+  - LD14 (Overflow): Lights up when the ALU result overflows the 4-bit range.
+  - LD15 (Zero): Lights up when the ALU result is exactly zero.
+  - LD4-LD8 and LD13 are unused and will remain OFF.
+
+
+6. SEVEN-SEGMENT DISPLAY MAPPING
+--------------------------------------------------------------------------------
+  Signal  : seg[6:0] and anode[3:0]
+  Pins    : W7, W6, U8, V8, U5, V5, U7 (segments a-g)
+            U2, U4, V4, W4 (anode control)
+
+  The seven-segment display shows the DECIMAL/HEX value of Register 7 (R7).
+  Only the rightmost digit is active (anode = "1110").
+
+  The display is active-low (a segment lights up when its signal is '0').
+
+  Displayed values:
+  +-------+-------------------+
+  | Value | Display Character |
+  +-------+-------------------+
+  |   0   |        0          |
+  |   1   |        1          |
+  |   2   |        2          |
+  |   3   |        3          |
+  |   4   |        4          |
+  |   5   |        5          |
+  |   6   |        6          |
+  |   7   |        7          |
+  |   8   |        8          |
+  |   9   |        9          |
+  |  10   |        A          |
+  |  11   |        b          |
+  |  12   |        C          |
+  |  13   |        d          |
+  |  14   |        E          |
+  |  15   |        F          |
+  +-------+-------------------+
+
+
+7. LOADED PROGRAM (Program ROM Contents)
+--------------------------------------------------------------------------------
+The processor executes the following hard-coded program:
+
+  +------+------------------+---------------------------------------------------+
+  | Addr | Binary (13-bit)  | Description                                       |
+  +------+------------------+---------------------------------------------------+
+  |  0   | 1110000000000    | (Initialization / Setup)                          |
+  |  1   | 1001110000000    | (Initialization / Setup)                          |
+  |  2   | 1110000000000    | (Initialization / Setup)                          |
+  |  3   | 1001100000000    | (Initialization / Setup)                          |
+  |  4   | 0001111100000    | (Computation: ADD operation)                      |
+  |  5   | 1110000000000    | (Initialization / Setup)                          |
+  |  6   | 0110000000000    | (Conditional jump / Loop control)                 |
+  |  7   | 0000000000000    | (NOP / End)                                       |
+  +------+------------------+---------------------------------------------------+
+
+  The program computes the sum of numbers 1 through 3 (i.e., 1 + 2 + 3 = 6)
+  and stores the final result in Register 7 (R7).
+
+
+8. EXPECTED BEHAVIOR (Step-by-Step)
+--------------------------------------------------------------------------------
+After programming the board and releasing the Reset button, the processor
+will execute one instruction approximately every 1 second.
+
+  The final steady state should be:
+    - LEDs LD0-LD3 show: 0110 (binary for 6)
+    - 7-Segment display shows: 6
+    - LD9-LD12 show the final instruction address
+    - Zero LED (LD15): OFF (result is not zero)
+    - Overflow LED (LD14): OFF (no overflow occurred)
+
+  Pressing the Reset button (BTNC) at any time will restart the program
+  from the beginning.
+
+
+9. INPUT OPERATION (INP Instruction)
+--------------------------------------------------------------------------------
+When the processor reaches an INP instruction, it enters a WAITING state:
+
+  Step 1: The processor halts execution and waits for user input.
+  Step 2: Set the desired 4-bit value using switches SW0-SW3.
+          Example: For value 3 (binary 0011), set SW0=ON, SW1=ON,
+                   SW2=OFF, SW3=OFF.
+  Step 3: Press the BTNR (Right Button) to confirm the input.
+  Step 4: The switch value is loaded into the target register, and the
+          processor resumes execution from the next instruction.
+
+  NOTE: Make sure the switches are set to the correct value BEFORE pressing
+        the confirm button (BTNR). The value is captured on the rising edge
+        of the button press.
+
+
+10. CLOCK INFORMATION
+--------------------------------------------------------------------------------
+  - Board oscillator: 100 MHz (W5)
+  - Processor clock:  ~1 Hz (divided by factor of 50,000,000)
+  - Each instruction executes on the rising edge of the slow clock.
+  - For simulation purposes, the clock divider value in SlowClock.vhd
+    can be changed from 50000000 to 5 for faster simulation results.
+
+
+11. INSTRUCTION SET REFERENCE (Extended)
+--------------------------------------------------------------------------------
+The Extended Nano-Processor supports 6 instructions, encoded in a 13-bit
+format: [12:10] Opcode | [9:7] Reg B | [6:4] Reg A | [3:0] Immediate/Addr
+
+  +--------+----------+-----------------------------------------------------+
+  | Opcode | Mnemonic | Format & Description                                |
+  +--------+----------+-----------------------------------------------------+
+  |  000   | ADD      | ADD Ra, Rb                                          |
+  |        |          | Adds Register A to Register B.                      |
+  |        |          | Result is stored in Register A (Reg[9:7]).           |
+  +--------+----------+-----------------------------------------------------+
+  |  001   | NEG      | NEG Rb                                              |
+  |        |          | Negates Register B (2's complement subtraction).     |
+  |        |          | Result is stored in Register B (Reg[9:7]).           |
+  +--------+----------+-----------------------------------------------------+
+  |  010   | MOVI     | MOVI R, d                                           |
+  |        |          | Loads 4-bit immediate value (d) from bits [3:0]      |
+  |        |          | into Register R (Reg[9:7]).                          |
+  |        |          | Load_select = "01" (selects immediate path).         |
+  +--------+----------+-----------------------------------------------------+
+  |  011   | JZR      | JZR R, addr                                         |
+  |        |          | Jumps to address (bits [2:0]) if Register R          |
+  |        |          | (Reg[9:7]) contains zero.                            |
+  +--------+----------+-----------------------------------------------------+
+  |  100   | INP      | INP R                                               |
+  |        |          | Reads 4-bit value from external switches (SW0-SW3)   |
+  |        |          | into Register R (Reg[9:7]).                          |
+  |        |          | Processor halts until BTNR is pressed to confirm.    |
+  |        |          | Load_select = "10" (selects switch input path).      |
+  +--------+----------+-----------------------------------------------------+
+  |  111   | HLT      | HLT                                                 |
+  |        |          | Halts the processor. Sets the waiting flag.          |
+  |        |          | Processor stops incrementing the Program Counter     |
+  |        |          | until input_ready (BTNR) is pressed.                 |
+  +--------+----------+-----------------------------------------------------+
+
+
+12. KEY DIFFERENCES FROM BASE VERSION
+--------------------------------------------------------------------------------
+  - Instruction bus width: 13 bits (was 12 bits)
+  - Opcode width: 3 bits (was 2 bits), allowing 6 instructions (was 4)
+  - New INP opcode: Allows runtime user input via switches
+  - New HLT opcode: Explicitly halts the processor
+  - 3-way MUX: Selects between ALU result, immediate value, or switch input
+  - VHDL packages: Modular design using buses, op_codes, and
+    processor_components packages
+  - Input ready button: BTNR (T17) for confirming switch input
+  - Program Counter address visible on LEDs (LD9-LD12)
+
+
+================================================================================
+                          END OF OPERATION GUIDE
+================================================================================

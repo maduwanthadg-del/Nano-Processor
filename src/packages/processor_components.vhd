@@ -1,35 +1,8 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 05/18/2025 04:38:37 AM
--- Design Name: 
--- Module Name: processor_components - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
 
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.buses.all;
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 
 package processor_components is
@@ -112,10 +85,6 @@ package processor_components is
        end component;
                 
                 
-               
-                
-                
-                
        component Program_counter
             port (
                 Reset : in std_logic;
@@ -142,7 +111,7 @@ package processor_components is
             port (
                  A : in std_logic_vector(3 downto 0);
                      B : in std_logic_vector(3 downto 0);
-                     CTRL : in std_logic; -- 0 = Add, 1 = Subtract
+                     CTRL : in std_logic;
                      S : out std_logic_vector(3 downto 0);
                      Zero : out std_logic;
                      Overflow : out std_logic
@@ -159,9 +128,3 @@ package processor_components is
   end package processor_components;
        
        
-       
-                
-       
-       
-                
-                

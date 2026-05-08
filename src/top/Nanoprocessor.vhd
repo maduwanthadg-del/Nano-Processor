@@ -20,10 +20,8 @@ end Processor;
 
 architecture Behavioral of Processor is
 
-    -- Clock and reset
     signal clk_slow          : std_logic;
 
-    -- Address and instruction signals
     signal next_addr         : instruction_address;
     signal current_addr      : instruction_address;
     signal selected_addr     : instruction_address;
@@ -33,7 +31,6 @@ architecture Behavioral of Processor is
     signal Instruction       : instruction_bus;
     signal load_sel          : std_logic_vector (1 downto 0);
 
-    -- Register and ALU control
     signal oprA_addr         : register_address;
     signal oprB_addr         : register_address;
     signal oprA_val          : data_bus;
@@ -48,7 +45,6 @@ architecture Behavioral of Processor is
     signal internal_waiting   : std_logic := '0';
     signal im_in_sel_out      : data_bus;
 
-    -- Input state handling
     signal waiting_state       : std_logic := '0';
     signal clear_waiting_next : std_logic := '0';
     signal input_ready_prev    : std_logic := '0';
@@ -58,26 +54,26 @@ architecture Behavioral of Processor is
 
 begin
 
-    -- Clock divider for slow clock
+    -- Divide 100MHz board clock down to ~1Hz for visible execution
     CLK_0 : Slow_Clk
         port map (
             Clk_in  => Clk,
             Clk_out => clk_slow
         );
 
-    -- Rising edge detector for input_ready
+    -- Rising edge detector: detects when BTNR is freshly pressed
     process(clk_slow, Reset)
     begin
         if Reset = '1' then
             input_ready_prev   <= '0';
             input_ready_rising <= '0';
         elsif rising_edge(clk_slow) then
-            input_ready_rising <= input_ready and not input_ready_prev;
+            input_ready_rising <= input_ready and not input_ready_prev; -- High for one cycle on press
             input_ready_prev   <= input_ready;
         end if;
     end process;
 
-    -- Waiting state logic: enter on INP, exit one cycle after input_ready
+    -- Waiting state FSM: enters on INP/HLT, exits one cycle after BTNR press
     process(clk_slow, Reset)
     begin
         if Reset = '1' then
@@ -85,11 +81,11 @@ begin
             clear_waiting_next  <= '0';
         elsif rising_edge(clk_slow) then
             if internal_waiting = '1' then
-                waiting_state      <= '1';
+                waiting_state      <= '1'; -- Halt the processor
                 clear_waiting_next <= '0';
             elsif input_ready = '1' and waiting_state = '1' then
                 if clear_waiting_next = '1' then
-                    waiting_state <= '0';
+                    waiting_state <= '0'; -- Resume execution
                 else
                     clear_waiting_next <= '1';
                 end if;
@@ -97,15 +93,13 @@ begin
         end if;
     end process;
 
-    -- PC increment enable control
+    -- PC only advances on button press when waiting, otherwise advances freely
     increment_enable <= input_ready_rising when waiting_state = '1'
                     else '1' when waiting_state = '0'
                     else '0';
 
-    -- Output data bus from register 7
-    Data <= register_data(7);
+    Data <= register_data(7); -- Output Register 7 value to LEDs
 
-    -- Instruction Decoder
     ID: Instruction_decoder
         port map (
             Instruction             => Instruction,
@@ -121,7 +115,6 @@ begin
             Waiting_flag  => internal_waiting
         );
 
-    -- PC Incrementor
     PC_IN: program_counter_incrementor
         port map (
             in_address        => current_addr,
@@ -130,24 +123,23 @@ begin
         );
         
         
+    -- 3-way MUX: selects ALU result (00), immediate value (01), or switch input (10)
     load_im_in_sel : MUX_3_4
         port map (
-            A => au_result,
-            B => immediate_val,
-            C => input_switches,
+            A => au_result,        -- Sel=00: ALU output (ADD/NEG)
+            B => immediate_val,    -- Sel=01: Immediate value (MOVI)
+            C => input_switches,   -- Sel=10: External switch input (INP)
             Sel => load_sel,
             Y => load_in_im_out);
 
     
-
-    -- 7-Segment Display Decoder
+    -- 7-Segment Display: decode R7 value to segment pattern
     LUT_16_7_0: LUT_16_7
         port map (
             address => register_data(7),
             data    => seg
         );
 
-    -- Operand Selection
     OPR_A: MUX_8_4
         port map (
             S => oprA_addr,
@@ -162,14 +154,12 @@ begin
             Y => oprB_val
         );
 
-    -- Program ROM
     PROM: Program_ROM
         port map (
             ROM_address => current_addr,
             I           => Instruction
         );
 
-    -- Jump or Next PC Selector
     jump_pc_selector_0: jump_pc_selector
         port map (
             program_counter_address => next_addr,
@@ -178,7 +168,6 @@ begin
             jump_pc_selector_out    => selected_addr
         );
 
-    -- Program Counter with async Reset
     PC: Program_counter
         port map (
             Reset  => Reset,
@@ -187,7 +176,6 @@ begin
             PC_out => current_addr
         );
 
-    -- Register Bank
     Registet_Bank_0: Register_bank
         port map (
             Reg_En     => reg_enable,
@@ -197,7 +185,6 @@ begin
             Data_Buses => register_data
         );
 
-    -- ALU
     Adder_subtractor_0: Adder_subtractor
         port map (
             A        => oprA_val,
@@ -208,8 +195,7 @@ begin
             Overflow => Overflow
         );
 
-    -- Output PC Address and 7-segment anode
-    addr  <= current_addr;
-    anode <= "1110";
+    addr  <= current_addr; -- Display current PC address on LEDs LD9-LD12
+    anode <= "1110"; -- Activate only the rightmost 7-segment display digit
 
 end Behavioral;

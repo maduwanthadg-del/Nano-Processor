@@ -6,7 +6,6 @@ end Adder_Subtractor_tb;
 
 architecture Behavioral of Adder_Subtractor_tb is
 
-    -- Component declaration
     component Adder_Subtractor is
         Port (
             A        : in std_logic_vector(3 downto 0);
@@ -18,7 +17,6 @@ architecture Behavioral of Adder_Subtractor_tb is
         );
     end component;
 
-    -- Signals for testbench
     signal A_tb        : std_logic_vector(3 downto 0) := (others => '0');
     signal B_tb        : std_logic_vector(3 downto 0) := (others => '0');
     signal CTRL_tb     : std_logic := '0';
@@ -28,7 +26,6 @@ architecture Behavioral of Adder_Subtractor_tb is
 
 begin
 
-    -- Instantiate the UUT (Unit Under Test)
     UUT: Adder_Subtractor
         port map (
             A        => A_tb,
@@ -39,10 +36,8 @@ begin
             Overflow => Overflow_tb
         );
 
-    -- Stimulus process
     stim_proc: process
     begin
-        -- Test 1: 3 + 2 = 5
         CTRL_tb <= '0';
         A_tb <= "0011";
         B_tb <= "0010";
@@ -53,24 +48,20 @@ begin
         B_tb <= "0010";
         wait for 100 ns;
 
-        -- Test 3: 4 - 4 = 0
         CTRL_tb <= '1';
         A_tb <= "0100";
         B_tb <= "0100";
         wait for 100 ns;
 
-        -- Test 4: 7 + 9 = 16 (Overflow expected)
         A_tb <= "0111";
         B_tb <= "1001";
         wait for 100 ns;
 
-        -- Test 5: 2 - 5 = (negative, expect underflow/overflow flag)
 
         A_tb <= "0000";
         B_tb <= "0101";
         wait for 100 ns;
 
-        -- End of simulation
         wait;
     end process;
 

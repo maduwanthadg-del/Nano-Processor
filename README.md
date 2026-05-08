@@ -1,106 +1,127 @@
-# 💻 4-Bit Nanoprocessor in VHDL
+# 🚀 4-Bit Nano-Processor — Extended Version
 
-**CS1050 — Computer Organisation and Digital Design**
+![VHDL](https://img.shields.io/badge/Language-VHDL-blue.svg)
+![FPGA](https://img.shields.io/badge/FPGA-Basys%203-orange.svg)
+![Vivado](https://img.shields.io/badge/Tool-Xilinx%20Vivado-red.svg)
+![Version](https://img.shields.io/badge/Version-Extended-green.svg)
 
-**University of Moratuwa | Department of Computer Science and Engineering**
+An enhanced 4-bit Nano-Processor implemented in VHDL for the **Digilent Basys 3 FPGA (Xilinx Artix-7)**. This extended version builds on the base processor with a wider instruction set, external input support via switches, and a modular package-based architecture.
 
----
-
-## What is This Project?
-
-This project is a **4-bit nanoprocessor**, designed from scratch in VHDL and deployed on the **Digilent BASYS 3 FPGA board**. It is a working miniature CPU — built entirely from basic logic gates and flip-flops — that can fetch, decode, and execute instructions just like a real processor.
-
-The processor runs a hard-coded program that computes **1 + 2 + 3 = 6** and displays the result on the board's LEDs and 7-segment display.
+> **What does it do?** It runs a hardcoded program that computes `1 + 2 + 3 = 6` and displays the result on LEDs and a 7-segment display — one instruction per second, so you can watch it think!
 
 ---
 
-## The Big Picture
+## ✨ What's New in the Extended Version
 
-At its core, the nanoprocessor is a **clocked state machine** that repeats the classic CPU cycle:
+| Feature | Base Version | Extended Version |
+| :--- | :---: | :---: |
+| Instruction Width | 12-bit | **13-bit** |
+| Opcode Width | 2-bit (4 instructions) | **3-bit (6 instructions)** |
+| Instructions | ADD, NEG, MOVI, JZR | ADD, NEG, MOVI, JZR, **INP**, **HLT** |
+| External Input | ❌ | ✅ via switches + button |
+| Architecture | Flat component declarations | **VHDL Packages** |
+| Data Source MUX | 2-way | **3-way** (ALU / Immediate / Switches) |
+| PC Address on LEDs | ❌ | ✅ LD9-LD12 |
+
+---
+
+## 🕹️ How to Use It on the Board
+
+### Buttons
+
+| Button | Location | What It Does |
+| :--- | :--- | :--- |
+| **BTNC** (Center) | Pin U18 | **Reset** — Press to restart the program from the beginning. All registers clear to zero. |
+| **BTNR** (Right) | Pin T17 | **Input Confirm** — When the processor hits an `INP` instruction, it waits. Set your value on the switches, then press this to continue. |
+
+### Switches (Input)
+
+| Switch | Signal | Purpose |
+| :--- | :--- | :--- |
+| **SW0** | `input_switches[0]` | Input Bit 0 (LSB) |
+| **SW1** | `input_switches[1]` | Input Bit 1 |
+| **SW2** | `input_switches[2]` | Input Bit 2 |
+| **SW3** | `input_switches[3]` | Input Bit 3 (MSB) |
+
+> 💡 **Example:** To input the number **5** (binary `0101`), flip SW0 UP, SW1 DOWN, SW2 UP, SW3 DOWN, then press BTNR.
+
+### LEDs (Output)
+
+| LEDs | What They Show |
+| :--- | :--- |
+| **LD0 – LD3** | The current value of **Register 7** (the output register) in binary |
+| **LD9 – LD12** | The current **Program Counter address** — which instruction is running |
+| **LD14** | **Overflow Flag** — lights up if the ALU overflows |
+| **LD15** | **Zero Flag** — lights up if the ALU result is exactly zero |
+
+### 7-Segment Display
+
+The **rightmost digit** of the 7-segment display continuously shows the value of Register 7 in hex (0–F). Only one digit is active (`anode = "1110"`).
+
+---
+
+## 💻 Instruction Set (ISA)
+
+All instructions are **13 bits wide**: `[12:10] Opcode | [9:7] Reg B | [6:4] Reg A | [3:0] Data`
+
+| Opcode | Name | Binary | What It Does |
+| :---: | :--- | :---: | :--- |
+| `000` | **ADD** | `000_RRR_RRR_0000` | Adds Register A and Register B. Result goes into Register A. |
+| `001` | **NEG** | `001_RRR_000_0000` | Negates the value in the register (2's complement). |
+| `010` | **MOVI** | `010_RRR_000_IIII` | Loads a 4-bit immediate value directly into the register. |
+| `011` | **JZR** | `011_RRR_000_0AAA` | If the register is zero, jump to address `AAA`. Used for loops. |
+| `100` | **INP** | `100_RRR_000_0000` | Reads the value from switches SW0–SW3 into the register. Processor halts until BTNR is pressed. |
+| `111` | **HLT** | `111_000_000_0000` | Halts the processor. Stops the Program Counter until BTNR is pressed. |
+
+---
+
+## 📜 The Loaded Program
+
+The ROM contains 8 instructions that compute `1 + 2 + 3 = 6`:
 
 ```
-Fetch → Decode → Execute → Write Back → Advance PC
+Address  Binary (13-bit)    Description
+------   ----------------   ---------------------------------
+  0      1110000000000      Setup / Initialize
+  1      1001110000000      Setup / Initialize
+  2      1110000000000      Setup / Initialize
+  3      1001100000000      Setup / Initialize
+  4      0001111100000      ADD operation
+  5      1110000000000      Setup / Initialize
+  6      0110000000000      JZR (conditional jump / loop)
+  7      0000000000000      NOP / End
 ```
 
-Every **2 seconds** (driven by a slow clock derived from the board's 100 MHz oscillator), the processor reads one instruction from its built-in memory, figures out what to do, performs the operation, and saves the result — then moves to the next instruction.
-
-After **8 instructions (~16 seconds)**, the answer `6` appears on the LEDs and 7-segment display, and the processor holds that result in an infinite loop.
+**Final Result:** Register 7 holds the value **6**, shown on LEDs (binary `0110`) and 7-segment display.
 
 ---
 
-## Instruction Set
+## 📂 Project Architecture
 
-The processor supports exactly **4 instructions**:
+Built using **25 VHDL source files** organized into 5 component groups:
 
-| Instruction | What it does |
-|-------------|-------------|
-| `MOVI R, d` | Load a constant value into a register |
-| `ADD Ra, Rb` | Add register Rb into register Ra |
-| `NEG R` | Negate a register (two's complement) |
-| `JZR R, d` | Jump to address d if register R is zero |
-
-Instructions are 12 bits wide. The top 2 bits are the opcode; the rest encode register selectors and immediate values.
-
----
-
-## How the Program Runs
-
-The processor executes this 8-line assembly program:
-
-```
-MOVI R1, 1      ; R1 = 1
-MOVI R2, 2      ; R2 = 2
-MOVI R3, 3      ; R3 = 3
-ADD  R1, R2     ; R1 = 1 + 2 = 3
-ADD  R1, R3     ; R1 = 3 + 3 = 6
-MOVI R7, 0      ; R7 = 0  (clear output register)
-ADD  R7, R1     ; R7 = 0 + 6 = 6  ← result appears on LEDs
-JZR  R0, 7      ; R0 is always 0, so jump back to line 7 (halt loop)
+```text
+📦 src/
+ ┣ 📂 alu/              # Arithmetic Logic Unit (Adders, RCA, Multiplexers)
+ ┣ 📂 decoder/          # Instruction Decoding & Program ROM
+ ┣ 📂 registers/        # Register Bank, Program Counter, Jump Selector
+ ┣ 📂 top/              # Top Level Integration, Slow Clock, 7-Seg Driver
+ ┗ 📂 packages/         # VHDL Packages (Bus types, Opcodes, Component declarations)
+📦 testbenches/          # Simulation testbenches for individual components
+📦 constraints/          # FPGA pin assignments (Basys3.xdc)
 ```
 
-At tick 7 (~14 seconds in), **R7 becomes 6**, the LEDs light up to show `0110` in binary, and the 7-segment display shows **`6`**. The final `JZR` instruction keeps jumping to itself forever, freezing the display.
-
-Pressing **BTNC** (centre button) resets the processor and restarts the computation.
-
 ---
 
-## How It Is Built
+## ⚡ Quick Start
 
-The processor is constructed from **18 individual VHDL components**, each built and tested separately before being wired together:
+1. Open **Xilinx Vivado** and create a new RTL project.
+2. Add `src/` as design sources, `testbenches/` as simulation sources, and `constraints/Basys3.xdc` as constraints.
+3. Select part **`xc7a35tcpg236-1`** (Basys 3 Artix-7).
+4. Set `Nanoprocessor.vhd` (entity `Processor`) as the **top module**.
+5. Click **Generate Bitstream** and program your board.
+6. Press **BTNC** to reset, then watch the LEDs count up to **6**!
 
-- **ALU** — a 4-bit ripple-carry adder/subtractor built from half adders and full adders
-- **Register Bank** — 8 × 4-bit registers (R0 is hardwired to zero; R1–R7 are writable)
-- **Program Counter** — a 3-bit counter that advances each clock tick or jumps on branch
-- **Program ROM** — stores the 8 machine code instructions (combinational lookup)
-- **Instruction Decoder** — translates a 12-bit instruction into control signals
-- **Multiplexers** — route data between components based on control signals
-- **Slow Clock** — divides 100 MHz down to 0.5 Hz so execution is visible to the eye
-- **7-Segment Display Driver** — converts R7's value to the correct segment pattern
-- **Top-Level Module** — wires all 18 components together into a working processor
+> ⚠️ **For simulation:** Change the counter in `SlowClock.vhd` from `50000000` to `5` so you don't wait 50 million cycles per instruction. Remember to change it back before generating the bitstream!
 
 ---
-
-## Tools & Hardware
-
-| | |
-|-|-|
-| **Board** | Digilent BASYS 3 (Xilinx Artix-7 FPGA) |
-| **HDL** | VHDL (fully structural design) |
-| **EDA Tool** | Xilinx Vivado |
-| **Clock** | 100 MHz on-board oscillator → divided to 0.5 Hz |
-| **Reset** | BTNC push button (active high, asynchronous) |
-
----
-
-## Team
-
-| Member | Index Number | Module |
-|--------|-------------|--------|
-| Member A | 240361V | ALU & Multiplexers |
-| Member B | 240331F | Register Bank & Program Counter |
-| Member C | 240362B | Program ROM & Instruction Decoder |
-| Member D | 240390H | Top-Level Integration, Slow Clock & Display |
-
----
-
-*CS1050 Lab 9–10 — Nanoprocessor Design*
