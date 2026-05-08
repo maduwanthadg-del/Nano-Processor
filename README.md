@@ -83,9 +83,9 @@ Built using 18 distinct VHDL components wired structurally:
 
 | Member | Index Number | Modules Developed |
 | :--- | :--- | :--- |
-| **Member A** | `240361V` | ALU & Multiplexers |
-| **Member B** | `240331F` | Register Bank & Program Counter |
-| **Member C** | `240362B` | Program ROM & Instruction Decoder |
-| **Member D** | `240390H` | Top-Level Integration, Slow Clock & Display |
+| **Kumar L.H.H.R.** | `240361V` | ALU & Multiplexers |
+| **Karunathna W.P.** | `240331F` | Register Bank & Program Counter |
+| **Kumara D.G.C.M.** | `240362B` | Program ROM & Instruction Decoder |
+| **Liyanagamage N.P.** | `240390H` | Top-Level Integration, Slow Clock & Display |
 
 *CS1050 Lab 9–10 — Nanoprocessor Design*
